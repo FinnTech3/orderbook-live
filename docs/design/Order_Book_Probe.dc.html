@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────────────── */
+:root{
+  --bg:#0a0c0d; --panel:#0f1214; --panel-2:#131719; --line:#1f2528; --line-2:#2b3236;
+  --text:#c7d0d3; --text-hi:#eef3f4; --dim:#6a7679; --dim-2:#4a5457;
+  --bid:#4f8f6b; --bid-bar:rgba(79,143,107,0.17);
+  --ask:#b0645a; --ask-bar:rgba(176,100,90,0.17);
+  --amber:#c99a3a; --accent:#7396c4; --accent-soft:rgba(115,150,196,0.16);
+  /* spacing */ --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:36px;
+  /* type */ --t-micro:9.5px; --t-label:10.5px; --t-body:12px; --t-num:13px; --t-lg:20px; --t-xl:30px; --t-hero:46px;
+  --track:1px;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f2f1ee; --panel:#fbfaf8; --panel-2:#f4f3f0; --line:#dedbd4; --line-2:#c9c5bc;
+    --text:#2b3033; --text-hi:#101315; --dim:#6f7679; --dim-2:#9aa0a2;
+    --bid:#2f6b4c; --bid-bar:rgba(47,107,76,0.13);
+    --ask:#96473c; --ask-bar:rgba(150,71,60,0.13);
+    --amber:#8a6512; --accent:#33557f; --accent-soft:rgba(51,85,127,0.14);
+  }
+}
+[data-theme="dark"]{
+  --bg:#0a0c0d; --panel:#0f1214; --panel-2:#131719; --line:#1f2528; --line-2:#2b3236;
+  --text:#c7d0d3; --text-hi:#eef3f4; --dim:#6a7679; --dim-2:#4a5457;
+  --bid:#4f8f6b; --bid-bar:rgba(79,143,107,0.17);
+  --ask:#b0645a; --ask-bar:rgba(176,100,90,0.17);
+  --amber:#c99a3a; --accent:#7396c4; --accent-soft:rgba(115,150,196,0.16);
+}
+[data-theme="light"]{
+  --bg:#f2f1ee; --panel:#fbfaf8; --panel-2:#f4f3f0; --line:#dedbd4; --line-2:#c9c5bc;
+  --text:#2b3033; --text-hi:#101315; --dim:#6f7679; --dim-2:#9aa0a2;
+  --bid:#2f6b4c; --bid-bar:rgba(47,107,76,0.13);
+  --ask:#96473c; --ask-bar:rgba(150,71,60,0.13);
+  --amber:#8a6512; --accent:#33557f; --accent-soft:rgba(51,85,127,0.14);
+}
+html,body{margin:0;padding:0;background:var(--bg);}
+*{box-sizing:border-box;}
+input{font:inherit;}
+button{font:inherit;cursor:pointer;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{color:var(--text-hi);}
+/* the only non-inline rule that cannot be inline: the responsive collapse */
+#obp-grid{display:grid;grid-template-columns:minmax(0,1fr) 190px minmax(0,1fr);gap:var(--s3);align-items:start;}
+#obp-bottom{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:var(--s3);align-items:stretch;}
+#obp-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:var(--s5);align-items:start;}
+@media (max-width:1100px){
+  #obp-bottom{grid-template-columns:minmax(0,1fr);}
+  #obp-hero{grid-template-columns:minmax(0,1fr);gap:var(--s4);}
+}
+@media (max-width:720px){
+  #obp-grid{grid-template-columns:minmax(0,1fr);}
+  #obp-mid{order:3;}
+}
+</style>
+</helmet>
+<div id="obp-root" data-theme="{{ theme }}" style="min-height:100vh;align-items:center;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--t-body);font-variant-numeric:tabular-nums;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);overflow-x:hidden;">
+
+  <header style="width:100%;max-width:1680px;display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);border-bottom:1px solid var(--line);padding-bottom:var(--s3);">
+    <div style="display:flex;align-items:baseline;gap:var(--s4);min-width:0;">
+      <span style="font-size:var(--t-num);font-weight:700;color:var(--text-hi);letter-spacing:0.04em;">{{ productId }}</span>
+      <span style="font-size:var(--t-label);color:var(--dim);letter-spacing:0.12em;text-transform:uppercase;">Coinbase · level 2 · aggregated depth</span>
+      <span style="font-size:var(--t-label);color:var(--dim-2);letter-spacing:0.12em;text-transform:uppercase;">tick {{ tickStr }} · lot {{ lotStr }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:var(--s3);">
+      <span style="font-size:var(--t-label);color:var(--dim);letter-spacing:0.1em;">{{ clock }}</span>
+      <button onClick="{{ toggleTheme }}" style="background:transparent;border:1px solid var(--line-2);color:var(--dim);font-size:var(--t-label);letter-spacing:0.12em;padding:5px 10px;text-transform:uppercase;" style-hover="color:var(--text-hi);border-color:var(--text-hi);">{{ themeLabel }}</button>
+    </div>
+  </header>
+
+  <div id="obp-grid" style="width:100%;max-width:1680px;">
+
+    <!-- ── BID DEPTH ── -->
+    <section style="background:var(--panel);border:1px solid var(--line);padding:var(--s3);min-width:0;display:flex;flex-direction:column;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid var(--line);">
+        <span style="text-align:left;color:var(--bid);">Bids</span>
+        <span style="text-align:right;">size</span>
+        <span style="text-align:right;">price</span>
+      </div>
+      <div style="display:flex;flex-direction:column;margin-top:4px;">
+        <sc-for list="{{ bidRows }}" as="row" hint-placeholder-count="15">
+          <div style="position:relative;height:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);align-items:center;font-size:var(--t-num);">
+            <div style="position:absolute;top:1px;bottom:1px;right:0;background:var(--bid-bar);transition:width 190ms cubic-bezier(.2,.6,.3,1);width:{{ row.barPct }};"></div>
+            <span style="position:relative;text-align:left;color:var(--dim-2);font-size:var(--t-body);">{{ row.cum }}</span>
+            <span style="position:relative;text-align:right;color:var(--text);">{{ row.size }}</span>
+            <span style="position:relative;text-align:right;color:var(--bid);font-weight:{{ row.weight }};">{{ row.price }}</span>
+            <div style="position:absolute;top:0;bottom:0;right:-4px;width:2px;background:{{ row.probeMark }};"></div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ── METRICS ── -->
+    <section id="obp-mid" style="background:var(--panel);border:1px solid var(--line);padding:var(--s3);display:flex;flex-direction:column;gap:var(--s4);min-width:0;">
+      <div>
+        <div style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Spread</div>
+        <div style="font-size:var(--t-xl);color:var(--text-hi);line-height:1.15;margin-top:2px;">{{ spread }}</div>
+        <div style="font-size:var(--t-label);color:var(--dim);letter-spacing:0.08em;">{{ spreadTicks }} · {{ spreadBps }}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--s3);">
+        <div>
+          <div style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Mid</div>
+          <div style="font-size:var(--t-lg);color:var(--text-hi);line-height:1.2;">{{ mid }}</div>
+        </div>
+        <div>
+          <div style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Microprice</div>
+          <div style="font-size:var(--t-lg);color:var(--text-hi);line-height:1.2;">{{ micro }}</div>
+          <div style="font-size:var(--t-label);color:var(--dim);">{{ microDrift }} vs mid</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:var(--s3);">
+        <div style="display:flex;justify-content:space-between;font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">
+          <span>Imbalance</span><span>{{ imbDepthLabel }}</span>
+        </div>
+        <div style="position:relative;height:8px;margin-top:6px;background:var(--panel-2);border:1px solid var(--line);">
+          <div style="position:absolute;left:0;top:0;bottom:0;background:var(--bid);opacity:0.55;transition:width 190ms cubic-bezier(.2,.6,.3,1);width:{{ imbBidW }};"></div>
+          <div style="position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line-2);"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:var(--t-num);">
+          <span style="color:var(--bid);">{{ imbBidPct }}</span>
+          <span style="color:var(--text-hi);">{{ imbSigned }}</span>
+          <span style="color:var(--ask);">{{ imbAskPct }}</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:var(--s3);display:flex;flex-direction:column;gap:6px;font-size:var(--t-label);color:var(--dim);letter-spacing:0.06em;">
+        <div style="display:flex;justify-content:space-between;"><span>BID DEPTH</span><span style="color:var(--text);">{{ bidDepthTotal }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>ASK DEPTH</span><span style="color:var(--text);">{{ askDepthTotal }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>LEVELS</span><span style="color:var(--text);">{{ levelCount }}</span></div>
+      </div>
+    </section>
+
+    <!-- ── ASK DEPTH ── -->
+    <section style="background:var(--panel);border:1px solid var(--line);padding:var(--s3);min-width:0;display:flex;flex-direction:column;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid var(--line);">
+        <span style="text-align:left;">price</span>
+        <span style="text-align:left;">size</span>
+        <span style="text-align:right;color:var(--ask);">Asks</span>
+      </div>
+      <div style="display:flex;flex-direction:column;margin-top:4px;">
+        <sc-for list="{{ askRows }}" as="row" hint-placeholder-count="15">
+          <div style="position:relative;height:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2);align-items:center;font-size:var(--t-num);">
+            <div style="position:absolute;top:1px;bottom:1px;left:0;background:var(--ask-bar);transition:width 190ms cubic-bezier(.2,.6,.3,1);width:{{ row.barPct }};"></div>
+            <span style="position:relative;text-align:left;color:var(--ask);font-weight:{{ row.weight }};">{{ row.price }}</span>
+            <span style="position:relative;text-align:left;color:var(--text);">{{ row.size }}</span>
+            <span style="position:relative;text-align:right;color:var(--dim-2);font-size:var(--t-body);">{{ row.cum }}</span>
+            <div style="position:absolute;top:0;bottom:0;left:-4px;width:2px;background:{{ row.probeMark }};"></div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── PROBE + FILL BAND ── -->
+  <div id="obp-bottom" style="width:100%;max-width:1680px;">
+
+      <section style="background:var(--panel);border:1px solid var(--line);padding:var(--s3);display:flex;flex-direction:column;gap:var(--s3);">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-size:var(--t-label);letter-spacing:0.14em;color:var(--text-hi);text-transform:uppercase;">Passive order probe</span>
+          <span style="font-size:var(--t-micro);letter-spacing:0.1em;color:var(--dim-2);text-transform:uppercase;">hypothetical · not sent</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <span style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Side</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line-2);">
+            <button onClick="{{ pickBid }}" style="background:{{ bidBtnBg }};color:{{ bidBtnFg }};border:none;padding:7px 0;font-size:var(--t-body);letter-spacing:0.14em;">BID</button>
+            <button onClick="{{ pickAsk }}" style="background:{{ askBtnBg }};color:{{ askBtnFg }};border:none;border-left:1px solid var(--line-2);padding:7px 0;font-size:var(--t-body);letter-spacing:0.14em;">ASK</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">
+            <span>Offset from touch</span><span style="color:var(--dim-2);">ticks</span>
+          </div>
+          <div style="display:grid;grid-template-columns:34px 1fr 34px;border:1px solid var(--line-2);">
+            <button onClick="{{ offsetDown }}" style="background:var(--panel-2);border:none;border-right:1px solid var(--line-2);color:var(--text);padding:7px 0;" style-hover="color:var(--text-hi);background:var(--line);">−</button>
+            <div style="display:flex;align-items:center;justify-content:center;gap:var(--s2);padding:7px 0;">
+              <span style="font-size:var(--t-num);color:var(--text-hi);">{{ offsetLabel }}</span>
+              <span style="font-size:var(--t-label);color:var(--dim);">@ {{ probePrice }}</span>
+            </div>
+            <button onClick="{{ offsetUp }}" style="background:var(--panel-2);border:none;border-left:1px solid var(--line-2);color:var(--text);padding:7px 0;" style-hover="color:var(--text-hi);background:var(--line);">+</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);">
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <span style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Order size</span>
+            <input value="{{ sizeInput }}" onChange="{{ onSize }}" inputMode="decimal" style="background:var(--panel-2);border:1px solid var(--line-2);color:var(--text-hi);padding:7px 8px;font-size:var(--t-num);width:100%;" style-focus="outline:none;border-color:var(--accent);">
+            <span style="font-size:var(--t-micro);color:var(--dim-2);letter-spacing:0.08em;">{{ sizeLotsLabel }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <span style="font-size:var(--t-label);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;">Volume budget</span>
+            <input value="{{ budgetInput }}" onChange="{{ onBudget }}" inputMode="decimal" style="background:var(--panel-2);border:1px solid var(--line-2);color:var(--text-hi);padding:7px 8px;font-size:var(--t-num);width:100%;" style-focus="outline:none;border-color:var(--accent);">
+            <span style="font-size:var(--t-micro);color:var(--dim-2);letter-spacing:0.08em;">traded through level, holding window</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- HERO: fill probability range -->
+      <section id="obp-hero" style="background:var(--panel);border:1px solid var(--line);padding:var(--s4);">
+       <div style="display:flex;flex-direction:column;gap:var(--s4);min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-size:var(--t-label);letter-spacing:0.14em;color:var(--text-hi);text-transform:uppercase;">Expected fill fraction</span>
+          <span style="font-size:var(--t-micro);letter-spacing:0.1em;color:{{ marketableColor }};text-transform:uppercase;">{{ marketableLabel }}</span>
+        </div>
+
+        <div style="display:flex;align-items:flex-end;gap:var(--s3);">
+          <div style="font-size:var(--t-hero);line-height:0.9;color:var(--text-hi);">{{ midpointPct }}</div>
+          <div style="display:flex;flex-direction:column;gap:1px;padding-bottom:4px;">
+            <span style="font-size:var(--t-label);letter-spacing:0.1em;color:var(--dim);text-transform:uppercase;">midpoint estimate</span>
+            <span style="font-size:var(--t-body);color:var(--accent);">range {{ lowPct }} — {{ highPct }}</span>
+          </div>
+        </div>
+
+        <div style="position:relative;height:86px;">
+          <div style="position:absolute;left:0;right:0;top:26px;height:2px;background:var(--line);"></div>
+          <div style="position:absolute;top:14px;height:26px;background:var(--accent-soft);border-left:2px solid var(--accent);border-right:2px solid var(--accent);transition:left 190ms ease,width 190ms ease;left:{{ brLeft }};width:{{ brWidth }};"></div>
+          <div style="position:absolute;top:6px;height:42px;width:1px;background:var(--accent);transition:left 190ms ease;left:{{ brMid }};"></div>
+          <div style="position:absolute;top:44px;font-size:var(--t-label);color:var(--dim);transform:translateX(-50%);white-space:nowrap;transition:left 190ms ease;left:{{ brLabelLo }};display:{{ splitVis }};">{{ lowPct }}</div>
+          <div style="position:absolute;top:44px;font-size:var(--t-label);color:var(--dim);transform:translateX(-50%);white-space:nowrap;transition:left 190ms ease;left:{{ brLabelHi }};display:{{ splitVis }};">{{ highPct }}</div>
+          <div style="position:absolute;top:44px;font-size:var(--t-label);color:var(--dim);transform:translateX(-50%);white-space:nowrap;transition:left 190ms ease;left:{{ brMerge }};display:{{ mergeVis }};">{{ mergedLabel }}</div>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:var(--t-micro);color:var(--dim-2);letter-spacing:0.08em;">
+            <span>0%</span><span>25</span><span>50</span><span>75</span><span>100%</span>
+          </div>
+        </div>
+
+       </div>
+
+       <div style="display:flex;flex-direction:column;gap:var(--s3);min-width:0;">
+        <div style="display:flex;flex-direction:column;border-top:1px solid var(--line);">
+          <div style="display:grid;grid-template-columns:1.5fr 68px 1fr 1fr;gap:var(--s2);padding:8px 0 6px;font-size:var(--t-micro);letter-spacing:0.12em;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--line);">
+            <span>queue model</span><span style="text-align:right;">fill</span><span style="text-align:right;">queue ahead</span><span style="text-align:right;">lots to fill</span>
+          </div>
+          <sc-for list="{{ models }}" as="m" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:1.5fr 68px 1fr 1fr;gap:var(--s2);align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:var(--t-body);">
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                <span style="color:var(--text-hi);">{{ m.name }}</span>
+                <span style="font-size:var(--t-micro);color:var(--dim-2);letter-spacing:0.04em;">{{ m.note }}</span>
+              </div>
+              <div style="position:relative;text-align:right;color:var(--text-hi);font-size:var(--t-num);">{{ m.pct }}</div>
+              <span style="text-align:right;color:var(--text);">{{ m.queueAhead }}</span>
+              <span style="text-align:right;color:var(--dim);">{{ m.lots }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-size:var(--t-micro);line-height:1.7;color:var(--dim-2);letter-spacing:0.03em;">
+          {{ hint }}
+        </div>
+       </div>
+      </section>
+  </div>
+
+  <!-- ── STATUS STRIP ── -->
+  <footer style="width:100%;max-width:1680px;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s5);border-top:1px solid var(--line);padding-top:10px;font-size:var(--t-label);letter-spacing:0.1em;color:var(--dim);text-transform:uppercase;">
+    <span style="display:flex;align-items:center;gap:7px;color:{{ statusColor }};">
+      <span style="width:6px;height:6px;background:{{ statusColor }};display:inline-block;"></span>{{ statusLabel }}
+    </span>
+    <span>seq <span style="color:var(--text);">{{ seq }}</span></span>
+    <span>gaps <span style="color:{{ gapColor }};">{{ gaps }}</span></span>
+    <span>msgs <span style="color:var(--text);">{{ msgs }}</span></span>
+    <span><span style="color:var(--text);">{{ mps }}</span> msg/s</span>
+    <span>book age <span style="color:var(--text);">{{ bookAge }}</span></span>
+    <span style="color:var(--amber);">{{ errorMessage }}</span>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;productId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;BTC-USD&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;depthLevels&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:15,&quot;min&quot;:5,&quot;max&quot;:24,&quot;tsType&quot;:&quot;number&quot;},&quot;imbalanceDepth&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10,&quot;min&quot;:1,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;},&quot;showCumulative&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const TICK = 0.01;      // USD per price tick (Coinbase BTC-USD grid)
+const LOT  = 0.0001;    // BTC per lot
+
+function fmtPrice(ticks){
+  const v = ticks * TICK;
+  return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtSize(lots, dp){
+  return (lots * LOT).toFixed(dp === undefined ? 4 : dp);
+}
+function clamp(x,a,b){ return x < a ? a : x > b ? b : x; }
+
+/* Local stand-in for ./lib/feed — same shape as the real Feed/book surface. */
+class SimBook {
+  constructor(){
+    const mid = 6412300; // ticks
+    this.bids = []; this.asks = [];
+    let p = mid - 1;
+    for (let i=0;i<32;i++){ this.bids.push({p, s: Math.round(4000 + Math.random()*Math.random()*55000)}); p -= 1 + (Math.random()<0.3?1:0); }
+    p = mid + 1;
+    for (let i=0;i<32;i++){ this.asks.push({p, s: Math.round(4000 + Math.random()*Math.random()*55000)}); p += 1 + (Math.random()<0.3?1:0); }
+    this.seq = 74821330;
+  }
+  step(){
+    let msgs = 0;
+    const n = 2 + Math.floor(Math.random()*7);
+    for (let i=0;i<n;i++){
+      const side = Math.random()<0.5 ? this.bids : this.asks;
+      const j = Math.floor(Math.random()*Math.random()*side.length);
+      const lvl = side[j];
+      const d = Math.round((Math.random()-0.48) * 7000);
+      lvl.s = clamp(lvl.s + d, 900, 72000);
+      msgs++; this.seq++;
+    }
+    if (Math.random() < 0.10){ // touch moves one tick
+      const up = Math.random() < 0.5;
+      if (up){
+        const a = this.asks.shift();
+        this.bids.unshift({p:a.p, s: Math.round(4000 + Math.random()*22000)});
+        const last = this.asks[this.asks.length-1];
+        this.asks.push({p:last.p + 1, s: Math.round(4000 + Math.random()*40000)});
+        this.bids.pop();
+      } else {
+        const b = this.bids.shift();
+        this.asks.unshift({p:b.p, s: Math.round(4000 + Math.random()*22000)});
+        const last = this.bids[this.bids.length-1];
+        this.bids.push({p:last.p - 1, s: Math.round(4000 + Math.random()*40000)});
+        this.asks.pop();
+      }
+      msgs += 4; this.seq += 4;
+    }
+    return msgs;
+  }
+  bestBid(){ return this.bids[0].p; }
+  bestAsk(){ return this.asks[0].p; }
+  spread(){ return this.bestAsk() - this.bestBid(); }
+  mid(){ return (this.bestAsk() + this.bestBid()) / 2; }
+  microprice(){
+    const bb = this.bids[0], ba = this.asks[0];
+    return (bb.p * ba.s + ba.p * bb.s) / (bb.s + ba.s);
+  }
+  levels(side, depth){ return (side === 'bid' ? this.bids : this.asks).slice(0, depth); }
+  sizeAt(side, price){
+    const l = (side === 'bid' ? this.bids : this.asks).find(x => x.p === price);
+    return l ? l.s : 0;
+  }
+  imbalance(depth){
+    const b = this.levels('bid',depth).reduce((a,x)=>a+x.s,0);
+    const a = this.levels('ask',depth).reduce((a2,x)=>a2+x.s,0);
+    return { bid:b, ask:a, ratio: b/(b+a), signed: (b-a)/(b+a) };
+  }
+  lastSequence(){ return this.seq; }
+}
+
+/* Local stand-in for estimateFill() — three queue-position models. */
+function estimateFill(book, o){
+  const marketable = o.side === 'bid' ? o.price >= book.bestAsk() : o.price <= book.bestBid();
+  const Q = book.sizeAt(o.side, o.price);      // lots resting ahead at our price
+  const S = o.size, B = o.volumeBudget;        // lots
+  // volume that trades AT our price level in the window: budget scaled by how
+  // deep the level sits behind the touch.
+  const touch = o.side === 'bid' ? book.bestBid() : book.bestAsk();
+  const back = Math.abs(o.price - touch);
+  const reach = Math.exp(-back / 2.5);         // deeper levels get touched less
+  const V = B * reach;
+  // Traded volume in the window is itself random: integrate the deterministic
+  // fill over a lognormal(σ) draw of V so the estimate is smooth, not a step.
+  const SIGMA = 0.85, NODES = 25;
+  const quad = [];
+  let wsum = 0;
+  for (let i=0;i<NODES;i++){
+    const z = -3 + 6*i/(NODES-1);
+    const w = Math.exp(-z*z/2);
+    quad.push([z,w]); wsum += w;
+  }
+  const frac = ahead => {
+    let acc = 0;
+    for (let i=0;i<NODES;i++){
+      const v = V * Math.exp(SIGMA*quad[i][0] - SIGMA*SIGMA/2);
+      acc += quad[i][1] * clamp((v - ahead) / S, 0, 1);
+    }
+    return clamp(acc / wsum, 0, 1);
+  };
+  if (marketable){
+    return { low:1, high:1, midpoint:1, marketable:true, perModel:[
+      { model:'FIFO / no cancellation', note:'crosses the spread', fillFraction:1, queueAhead:0, lotsNeededForFullFill:S },
+      { model:'Uniform cancellation',   note:'crosses the spread', fillFraction:1, queueAhead:0, lotsNeededForFullFill:S },
+      { model:'Front-loaded cancel',    note:'crosses the spread', fillFraction:1, queueAhead:0, lotsNeededForFullFill:S }
+    ]};
+  }
+  const kappa = 0.55, gamma = 0.80;
+  const aheadUniform = Q * (1 - kappa * clamp(V / (Q + S + 1), 0, 1));
+  const aheadFront   = Q * (1 - gamma * clamp(V / (Q * 0.55 + S + 1), 0, 1));
+  const per = [
+    { model:'FIFO / no cancellation', note:'lower bound · queue only drains by trades',
+      ahead:Q },
+    { model:'Uniform cancellation',   note:'κ=0.55 · cancels spread evenly over queue',
+      ahead:aheadUniform },
+    { model:'Front-loaded cancel',    note:'γ=0.80 · cancels concentrate at queue head',
+      ahead:aheadFront }
+  ].map(m => ({
+    model:m.model, note:m.note,
+    fillFraction: frac(m.ahead),
+    queueAhead: m.ahead,
+    lotsNeededForFullFill: m.ahead + S
+  }));
+  const fr = per.map(m => m.fillFraction);
+  const low = Math.min.apply(null, fr), high = Math.max.apply(null, fr);
+  return { low, high, midpoint:(low+high)/2, perModel:per, marketable:false };
+}
+
+class Component extends DCLogic {
+  state = {
+    theme:'dark', side:'bid', offset:2,
+    sizeInput:'0.0500', budgetInput:'2.0000',
+    tickN:0, status:'connecting', gaps:0, msgs:0, mps:0, errorMessage:'', clock:'--:--:--'
+  };
+
+  componentDidMount(){
+    this.book = new SimBook();
+    this.window = [];
+    this.t0 = Date.now();
+    this.onResize = () => this.setState({ vh: window.innerHeight });
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+    setTimeout(()=>this.setState({status:'live'}), 700);
+    this.iv = setInterval(()=>{
+      const m = this.book.step();
+      const now = Date.now();
+      this.window.push([now, m]);
+      while (this.window.length && now - this.window[0][0] > 1000) this.window.shift();
+      const mps = this.window.reduce((a,x)=>a+x[1],0);
+      const st = { tickN:this.state.tickN+1, msgs:this.state.msgs+m, mps,
+        clock:new Date().toISOString().slice(11,19)+'Z' };
+      if (Math.random() < 0.004){
+        st.gaps = this.state.gaps + 1;
+        st.errorMessage = 'sequence gap — resynchronising from snapshot';
+        clearTimeout(this.errT);
+        this.errT = setTimeout(()=>this.setState({errorMessage:''}), 2600);
+      }
+      this.setState(st);
+    }, 120);
+  }
+  componentWillUnmount(){ clearInterval(this.iv); clearTimeout(this.errT); window.removeEventListener('resize', this.onResize); }
+
+  num(s, fallback){ const v = parseFloat(s); return isFinite(v) && v > 0 ? v : fallback; }
+
+  renderVals(){
+    // fill the viewport with real levels instead of leaving the column short
+    const fit = clamp(Math.floor(((this.state.vh || 900) - 620) / 24), 10, 26);
+    const depth = this.props.depthLevels ?? fit;
+    const imbDepth = this.props.imbalanceDepth ?? 10;
+    const showCum = this.props.showCumulative ?? true;
+    const theme = this.state.theme;
+    const b = this.book;
+    if (!b) return { theme, themeLabel:'LIGHT', bidRows:[], askRows:[], models:[] };
+
+    const side = this.state.side;
+    const bids = b.levels('bid', depth), asks = b.levels('ask', depth);
+    const maxSz = Math.max.apply(null, bids.concat(asks).map(l=>l.s));
+    const touch = side === 'bid' ? b.bestBid() : b.bestAsk();
+    const probePrice = side === 'bid' ? touch - this.state.offset : touch + this.state.offset;
+
+    const mkRows = (levels, s) => {
+      let cum = 0;
+      return levels.map((l,i) => {
+        cum += l.s;
+        return {
+          price: fmtPrice(l.p),
+          size: fmtSize(l.s),
+          cum: showCum ? fmtSize(cum, 3) : '',
+          barPct: (100 * l.s / maxSz).toFixed(1) + '%',
+          weight: i === 0 ? 700 : 400,
+          probeMark: (s === side && l.p === probePrice) ? 'var(--accent)' : 'transparent'
+        };
+      });
+    };
+
+    const sizeLots = Math.max(1, Math.round(this.num(this.state.sizeInput, 0.05) / LOT));
+    const budgetLots = Math.max(1, Math.round(this.num(this.state.budgetInput, 2) / LOT));
+    const r = estimateFill(b, { side, price: probePrice, size: sizeLots, volumeBudget: budgetLots });
+
+    const pct = x => (x*100).toFixed(1) + '%';
+    const imb = b.imbalance(imbDepth);
+    const midP = b.mid(), microP = b.microprice();
+    const spreadT = b.spread();
+
+    const lowP = clamp(r.low*100, 0, 100), highP = clamp(r.high*100, 0, 100);
+    const width = Math.max(highP - lowP, 0.4);
+
+    return {
+      theme, themeLabel: theme === 'dark' ? 'light' : 'dark',
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      productId: this.props.productId ?? 'BTC-USD',
+      tickStr: '0.01', lotStr: '0.0001', clock: this.state.clock,
+
+      bidRows: mkRows(bids,'bid'), askRows: mkRows(asks,'ask'),
+
+      spread: '$' + (spreadT*TICK).toFixed(2),
+      spreadTicks: spreadT + (spreadT === 1 ? ' tick' : ' ticks'),
+      spreadBps: (spreadT*TICK / (midP*TICK) * 1e4).toFixed(3) + ' bps',
+      mid: fmtPrice(midP),
+      micro: (microP*TICK).toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:4}),
+      microDrift: ((microP - midP)*TICK >= 0 ? '+' : '') + ((microP - midP)*TICK).toFixed(4),
+      imbBidW: (imb.ratio*100).toFixed(1) + '%',
+      imbBidPct: (imb.ratio*100).toFixed(1) + '%',
+      imbAskPct: ((1-imb.ratio)*100).toFixed(1) + '%',
+      imbSigned: (imb.signed >= 0 ? '+' : '') + imb.signed.toFixed(3),
+      imbDepthLabel: imbDepth + 'L',
+      bidDepthTotal: fmtSize(bids.reduce((a,x)=>a+x.s,0), 3),
+      askDepthTotal: fmtSize(asks.reduce((a,x)=>a+x.s,0), 3),
+      levelCount: depth + ' × 2',
+
+      side,
+      pickBid: () => this.setState({side:'bid'}),
+      pickAsk: () => this.setState({side:'ask'}),
+      bidBtnBg: side === 'bid' ? 'var(--bid-bar)' : 'transparent',
+      bidBtnFg: side === 'bid' ? 'var(--bid)' : 'var(--dim)',
+      askBtnBg: side === 'ask' ? 'var(--ask-bar)' : 'transparent',
+      askBtnFg: side === 'ask' ? 'var(--ask)' : 'var(--dim)',
+      offsetLabel: (side === 'bid' ? '−' : '+') + this.state.offset,
+      offsetUp: () => this.setState(s => ({offset: clamp(s.offset+1, 0, 40)})),
+      offsetDown: () => this.setState(s => ({offset: clamp(s.offset-1, 0, 40)})),
+      probePrice: fmtPrice(probePrice),
+      sizeInput: this.state.sizeInput,
+      budgetInput: this.state.budgetInput,
+      onSize: e => this.setState({sizeInput: e.target.value}),
+      onBudget: e => this.setState({budgetInput: e.target.value}),
+      sizeLotsLabel: sizeLots.toLocaleString('en-US') + ' lots BTC',
+
+      midpointPct: pct(r.midpoint), lowPct: pct(r.low), highPct: pct(r.high),
+      brLeft: lowP.toFixed(2) + '%',
+      brWidth: width.toFixed(2) + '%',
+      brRight: (lowP + width).toFixed(2) + '%',
+      brLabelLo: clamp(lowP, 6, 94).toFixed(2) + '%',
+      brLabelHi: clamp(lowP + width, 6, 94).toFixed(2) + '%',
+      splitVis: width >= 24 ? 'block' : 'none',
+      mergeVis: width >= 24 ? 'none' : 'block',
+      mergedLabel: (highP - lowP) < 0.15 ? pct(r.low) : pct(r.low) + ' — ' + pct(r.high),
+      brMerge: clamp(lowP + width/2, 14, 86).toFixed(2) + '%',
+      brMid: clamp(r.midpoint*100,0,100).toFixed(2) + '%',
+      marketable: r.marketable,
+      marketableLabel: r.marketable ? 'marketable — would cross' : 'passive · resting',
+      marketableColor: r.marketable ? 'var(--amber)' : 'var(--dim-2)',
+      models: r.perModel.map(m => ({
+        name: m.model, note: m.note, pct: pct(m.fillFraction),
+        queueAhead: fmtSize(m.queueAhead, 3),
+        lots: Math.round(m.lotsNeededForFullFill).toLocaleString('en-US')
+      })),
+      hint: 'Bracket spans the pessimistic and optimistic queue models against the live level. ' +
+            'Queue ahead is read from the book at the probe price each tick; the volume budget is ' +
+            'discounted by distance from touch before it is applied to the queue.',
+
+      statusLabel: this.state.status === 'live' ? 'connected' : 'connecting',
+      statusColor: this.state.status === 'live' ? 'var(--bid)' : 'var(--amber)',
+      seq: b.lastSequence().toLocaleString('en-US'),
+      gaps: this.state.gaps,
+      gapColor: this.state.gaps > 0 ? 'var(--amber)' : 'var(--text)',
+      msgs: this.state.msgs.toLocaleString('en-US'),
+      mps: this.state.mps,
+      bookAge: Math.floor((Date.now() - (this.t0||Date.now()))/1000) + 's',
+      errorMessage: this.state.errorMessage
+    };
+  }
+}
+
+</script>
+</body>
+</html>

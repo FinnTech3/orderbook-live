@@ -106,10 +106,21 @@ whichever model flatters your intuition. `estimateFill` returns
    only fall back to REST on a resync (where a full reconnect naturally
    redelivers a fresh WS snapshot anyway).
 
-## Where the UI lives
+## The viewer
 
-The design brief for the frontend is being drawn up separately. This
-README will link to the deployed viewer when it goes up.
+`npm run dev` runs the app locally against a live Coinbase feed on
+`http://localhost:5173`. The whole surface is one screen: depth of book
+on either side of a metrics column, a hypothetical order probe below,
+and a fill-probability bracket that shows the range across the three
+queue models. Dark by default, respects `prefers-color-scheme`, and
+carries a manual toggle in the header for the times the OS is wrong.
+
+The design that this UI is built to lives at
+[`docs/DESIGN_BRIEF.md`](docs/DESIGN_BRIEF.md) and
+[`docs/design/Order_Book_Probe.dc.html`](docs/design/Order_Book_Probe.dc.html)
+— the second is the design-fidelity reference, not production code.
+`src/app/App.tsx` is the real implementation, wired to the `Feed` and
+`estimateFill` above rather than a stand-in book.
 
 ## Tech
 
