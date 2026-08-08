@@ -20,6 +20,12 @@ import { Instrument, Side } from "../lib/types.js";
 const BTC = new Instrument("BTC-USD", "0.01", "0.00000001");
 const PRODUCT_ID = "BTC-USD";
 
+/** Optional feed override. Defaults to Coinbase's public feed; set at build
+ *  time to point at a staging feed, a snapshot proxy, or a local replay
+ *  (used for the README screenshots). Falls back to the venue default when
+ *  unset, so a normal build needs no configuration. */
+const WS_URL = (import.meta.env.VITE_WS_URL as string | undefined) || undefined;
+
 // ─────────────────────────────── helpers ──────────────────────────────────
 
 function clamp(x: number, a: number, b: number): number {
@@ -79,8 +85,11 @@ export function App(): JSX.Element {
 
   const [side, setSide] = useState<Side>(Side.Bid);
   const [offset, setOffset] = useState<number>(2);
-  const [sizeInput, setSizeInput] = useState("0.0500");
-  const [budgetInput, setBudgetInput] = useState("2.0000");
+  // Defaults chosen so the first thing you see is an actual range across the
+  // three models, not a saturated 100% — an order sized near the queue ahead
+  // with a budget that only partly clears it is where the models disagree.
+  const [sizeInput, setSizeInput] = useState("0.1500");
+  const [budgetInput, setBudgetInput] = useState("0.2000");
 
   const feedRef = useRef<Feed | null>(null);
   const bookAgeAnchorRef = useRef<number | null>(null);
@@ -94,7 +103,11 @@ export function App(): JSX.Element {
 
   // The feed. Started once, torn down on unmount.
   useEffect(() => {
-    const feed = new Feed({ instrument: BTC, productId: PRODUCT_ID });
+    const feed = new Feed({
+      instrument: BTC,
+      productId: PRODUCT_ID,
+      ...(WS_URL ? { websocketUrl: WS_URL } : {}),
+    });
     feedRef.current = feed;
     const off = feed.subscribe({
       onState(s) {

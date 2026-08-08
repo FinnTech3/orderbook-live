@@ -14,6 +14,16 @@ queue the cancellations you observe were sitting — and those assumptions
 disagree. Showing the disagreement, live, was the point of the whole
 exercise.
 
+**Live viewer:** https://finntech3.github.io/orderbook-live/
+
+![The viewer showing a live BTC-USD book and the passive-order probe](docs/screenshots/viewer-dark.png)
+
+The hero panel is the point of the whole thing: place a hypothetical
+passive order and the three queue models disagree about how much of it
+fills — here, anywhere from 31% to 85%. The honest answer is the range,
+not a single number. The screenshot is the real UI rendering real
+Coinbase depth (captured mid-stream); a light theme ships too.
+
 ## What's here
 
 - A depth-book engine that maintains a live picture of a Coinbase market
@@ -33,8 +43,9 @@ exercise.
 
 ```
 npm install
-npm test          # 100+ tests, all green
-npm run watch     # BTC-USD by default; add ETH-USD or SOL-USD
+npm test          # 113 tests, all green
+npm run dev       # the viewer, against a live Coinbase feed
+npm run watch     # headless CLI: BTC-USD by default; add ETH-USD or SOL-USD
 ```
 
 The `watch` command prints one JSON line every 500ms with the current
@@ -105,22 +116,58 @@ whichever model flatters your intuition. `estimateFill` returns
    to align them. Corrected to use the WS snapshot as the anchor and
    only fall back to REST on a resync (where a full reconnect naturally
    redelivers a fresh WS snapshot anyway).
+4. **The bracket that was secretly a point.** Taking the first
+   screenshot for this README is what caught it: the "range" across the
+   three queue models rendered as `100.0% — 100.0%`, and not just
+   because the budget was generous — the three models were returning
+   *identical* numbers in every scenario. The cause was subtle. The
+   original `estimateForModel` distributed the volume budget via each
+   model's `cancellationsAhead` rule, but a freshly placed order has
+   nothing resting behind it, and with an empty tail the arithmetic
+   `clamp` forces every cancellation to come from ahead — so all three
+   models collapse to the same answer. The headline feature was inert
+   and the tests hadn't caught it, because `≤` assertions pass happily
+   when both sides are equal. Fixed by giving each model an explicit,
+   named `cancelShareAhead` assumption (0 / 0.55 / 0.80) about how much
+   of the queue ahead clears by cancellation rather than by trading
+   through it, scaled by how much the level actually turns over. The
+   models now genuinely diverge, and `tests/fill.test.ts` gained four
+   tests that assert a *strictly* non-degenerate range and the
+   pessimistic < proportional < optimistic ordering — the guard that
+   was missing.
 
 ## The viewer
 
-`npm run dev` runs the app locally against a live Coinbase feed on
-`http://localhost:5173`. The whole surface is one screen: depth of book
-on either side of a metrics column, a hypothetical order probe below,
-and a fill-probability bracket that shows the range across the three
-queue models. Dark by default, respects `prefers-color-scheme`, and
-carries a manual toggle in the header for the times the OS is wrong.
+Hosted at **https://finntech3.github.io/orderbook-live/** (GitHub Pages,
+built and deployed by `.github/workflows/deploy.yml` on every push to
+`main`). It runs entirely in the browser — the page opens a WebSocket
+straight to Coinbase, so there is no backend to host.
 
-The design that this UI is built to lives at
+`npm run dev` runs the same app locally against the live feed. The whole
+surface is one screen: depth of book on either side of a metrics column,
+a hypothetical order probe below, and the fill-probability bracket across
+the three queue models. Dark by default, respects `prefers-color-scheme`,
+with a manual toggle in the header for the times the OS is wrong.
+
+The feed endpoint is configurable: set `VITE_WS_URL` at build time to
+point the app at a staging feed, a snapshot proxy, or a local replay of
+captured traffic (which is how the README screenshots are produced from
+real depth without needing browser egress to the exchange). Unset, it
+uses Coinbase's public feed.
+
+The design this UI is built to lives at
 [`docs/DESIGN_BRIEF.md`](docs/DESIGN_BRIEF.md) and
 [`docs/design/Order_Book_Probe.dc.html`](docs/design/Order_Book_Probe.dc.html)
 — the second is the design-fidelity reference, not production code.
 `src/app/App.tsx` is the real implementation, wired to the `Feed` and
 `estimateFill` above rather than a stand-in book.
+
+<details>
+<summary>Light theme</summary>
+
+![The viewer in light theme](docs/screenshots/viewer-light.png)
+
+</details>
 
 ## Tech
 

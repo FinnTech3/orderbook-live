@@ -26,6 +26,23 @@ export interface QueueModel {
   /** How many of `cancelled` lots were in front of the order. `ahead` and
    *  `behind` are other participants' sizes on either side. */
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number;
+  /**
+   * The fraction of the queue *ahead* of a resting order that this model
+   * assumes clears by cancellation over a holding window — as opposed to
+   * only clearing when trades chew through it from the front.
+   *
+   * This is the parameter that makes the three models diverge for a *newly
+   * placed* order. The `cancellationsAhead` arithmetic above collapses to a
+   * single answer when nothing rests behind the order (always true at the
+   * instant of placement — see fill.ts), because with an empty tail every
+   * cancellation is forced to come from ahead. The live viewer therefore
+   * brackets fill probability with an explicit, named assumption about how
+   * much of the queue ahead is cancellation-driven rather than deriving it
+   * from that degenerate split. Pessimistic assumes none of it; optimistic
+   * assumes most; proportional sits between. It is a modelling choice, not
+   * an observable, which is exactly why the honest output is a range.
+   */
+  readonly cancelShareAhead: number;
 }
 
 /** Force a preferred split into the range the sizes actually allow. */
@@ -47,6 +64,9 @@ export function clamp(
  *  direction understates rather than overstates. */
 export class PessimisticQueue implements QueueModel {
   readonly name = "pessimistic";
+  /** No cancellation help: the queue ahead only clears by trading through
+   *  it (pure FIFO). The lower bound on fill. */
+  readonly cancelShareAhead = 0;
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number {
     return clamp(ahead, behind, cancelled, 0);
   }
@@ -55,6 +75,10 @@ export class PessimisticQueue implements QueueModel {
 /** Cancellations come from in front of us wherever possible. */
 export class OptimisticQueue implements QueueModel {
   readonly name = "optimistic";
+  /** Front-loaded cancellation: most of the queue ahead is assumed to pull
+   *  over the window, so the order advances with little trading. The upper
+   *  bound on fill. */
+  readonly cancelShareAhead = 0.8;
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number {
     return clamp(ahead, behind, cancelled, cancelled);
   }
@@ -67,6 +91,9 @@ export class OptimisticQueue implements QueueModel {
  *  which makes this mildly optimistic in practice. */
 export class ProportionalQueue implements QueueModel {
   readonly name = "proportional";
+  /** A moderate share of the queue ahead cancels — between the FIFO floor
+   *  and the front-loaded ceiling. */
+  readonly cancelShareAhead = 0.55;
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number {
     const total = ahead + behind;
     const preferred = total <= 0 ? 0 : Math.round(cancelled * ahead / total);
