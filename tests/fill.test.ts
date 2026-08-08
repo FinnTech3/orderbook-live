@@ -185,3 +185,67 @@ describe("estimateFill — passive orders", () => {
     expect(Number.isFinite(range.midpoint)).toBe(true);
   });
 });
+
+describe("estimateFill — the three models actually diverge", () => {
+  // Regression guard for the defect the README screenshot surfaced: with an
+  // empty tail behind a hypothetical order, the cancellations-ahead split is
+  // forced and every model returned an identical number, so the bracket was
+  // always zero-width. The live viewer's whole thesis is a *range*.
+  function midWindow() {
+    // Bid queue: 100 @ 99 (strictly better) + 50 @ 98 = 150 lots ahead of a
+    // passive order resting at 98. A partial budget that clears part of the
+    // queue is where the models must disagree.
+    const book = bookAt(
+      [
+        { price: 99, size: 100 },
+        { price: 98, size: 50 },
+      ],
+      [{ price: 101, size: 10 }],
+    );
+    return estimateFill(book, {
+      side: Side.Bid,
+      price: 98,
+      size: 60,
+      volumeBudget: 120,
+    });
+  }
+
+  it("produces a strictly non-degenerate range", () => {
+    const range = midWindow();
+    expect(range.high).toBeGreaterThan(range.low);
+  });
+
+  it("orders pessimistic < proportional < optimistic", () => {
+    const byModel = Object.fromEntries(
+      midWindow().perModel.map((e) => [e.model, e.fillFraction]),
+    );
+    expect(byModel["pessimistic"]!).toBeLessThan(byModel["proportional"]!);
+    expect(byModel["proportional"]!).toBeLessThan(byModel["optimistic"]!);
+    expect(byModel["pessimistic"]).toBe(midWindow().low);
+    expect(byModel["optimistic"]).toBe(midWindow().high);
+  });
+
+  it("converges at the top when the budget dwarfs the queue", () => {
+    const book = bookAt(
+      [{ price: 99, size: 100 }, { price: 98, size: 50 }],
+      [{ price: 101, size: 10 }],
+    );
+    const range = estimateFill(book, {
+      side: Side.Bid, price: 98, size: 60, volumeBudget: 100_000,
+    });
+    expect(range.low).toBe(1);
+    expect(range.high).toBe(1);
+  });
+
+  it("converges at the bottom when the level barely turns over", () => {
+    const book = bookAt(
+      [{ price: 99, size: 100 }, { price: 98, size: 50 }],
+      [{ price: 101, size: 10 }],
+    );
+    const range = estimateFill(book, {
+      side: Side.Bid, price: 98, size: 60, volumeBudget: 5,
+    });
+    // Even the optimistic model can't advance a 150-deep queue on 5 lots.
+    expect(range.high).toBe(0);
+  });
+});
