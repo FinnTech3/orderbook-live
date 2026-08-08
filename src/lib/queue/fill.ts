@@ -129,17 +129,31 @@ export function estimateFill(
 }
 
 /**
- * For a single model, project a fill fraction by assuming volumeBudget
- * arrives as cancellations distributed by that model's rule, and count
- * how much of the order slot the arithmetic clears.
+ * For a single model, project the fill fraction of a newly placed order.
  *
- * The bookkeeping mirrors the simulator: `ahead` shrinks by whatever the
- * model says came from in front; when it reaches zero, the order starts
- * filling from the remaining budget. This is a stateless approximation of
- * what the Python engine does step-by-step, and it is exact under the
- * assumption that no new size joins in front of the order (which is a
- * fine approximation over short holding windows and the honest one to
- * name for longer ones — see the README limitation).
+ * The order rests at the back of the queue at its price: `queueAhead` lots
+ * sit in front of it, nothing behind it yet. Two things clear the lots
+ * ahead over the holding window — trades, which chew through from the
+ * front, and cancellations, which can vanish from anywhere. We only observe
+ * the net drainage (`volumeBudget`), not the split, so each model names an
+ * assumption for how much of the queue ahead is cancellation-driven:
+ * `model.cancelShareAhead`. Pessimistic assumes none of it (pure FIFO —
+ * you must trade through the whole queue), optimistic assumes most of it
+ * cancels out from in front of you, proportional sits between.
+ *
+ * The cancellation share is scaled by how much the level actually turns
+ * over relative to its depth (`utilisation`): a quiet level cannot realise
+ * its assumed cancellations, so all three models converge there; a busy
+ * level lets them diverge, which is where the bracket widens and the honest
+ * uncertainty shows.
+ *
+ *   effectiveAhead = queueAhead · (1 − cancelShareAhead · utilisation)
+ *   reaches order  = max(0, volumeBudget − effectiveAhead)
+ *   fill           = min(1, reaches order / orderSize)
+ *
+ * This is a stateless estimate on the current book: it assumes no new size
+ * joins in front of the order, a fine approximation over short holding
+ * windows and the honest thing to name for longer ones (see the README).
  */
 function estimateForModel(args: {
   model: QueueModel;
@@ -148,38 +162,24 @@ function estimateForModel(args: {
   volumeBudget: number;
 }): { fillFraction: number; lotsNeededForFullFill: number } {
   const { model, queueAhead, orderSize, volumeBudget } = args;
+  const lotsNeededForFullFill = queueAhead + orderSize;
   if (orderSize <= 0) {
     return { fillFraction: 0, lotsNeededForFullFill: 0 };
   }
   if (volumeBudget <= 0) {
-    return { fillFraction: 0, lotsNeededForFullFill: queueAhead + orderSize };
+    return { fillFraction: 0, lotsNeededForFullFill };
   }
 
-  // Two-stage arithmetic:
-  //   1) A model-dependent fraction of the budget clears the queue ahead.
-  //   2) The remainder eats into the order.
-  //
-  // When queueAhead is zero the model does not apply — everything reaches
-  // the order directly.
-  let ahead = queueAhead;
-  let behind = 0;
-  let budget = volumeBudget;
-
-  // We treat the budget as cancellations first, distributed by the model,
-  // then any leftover as trades. This slightly favours passive fills
-  // because trades hit the front hardest; the pessimistic model still
-  // reports the smallest fraction, which is the useful ordering.
-  if (ahead > 0) {
-    const cancelPortion = Math.min(budget, ahead + behind);
-    const takenFromAhead = model.cancellationsAhead(ahead, behind, cancelPortion);
-    ahead -= takenFromAhead;
-    budget -= cancelPortion;
-  }
-
-  // Anything left is volume that reaches the order.
-  const consumed = Math.min(orderSize, Math.max(0, budget));
-  const fraction = Math.max(0, Math.min(1, consumed / orderSize));
-  const lotsNeededForFullFill = queueAhead + orderSize;
+  // How much the level turns over relative to what has to clear for a full
+  // fill. Bounded to [0, 1] so a modest budget cannot over-credit assumed
+  // cancellations. When there is no queue ahead, utilisation is irrelevant
+  // — everything in the budget reaches the order directly.
+  const utilisation = lotsNeededForFullFill > 0
+    ? Math.min(1, volumeBudget / lotsNeededForFullFill)
+    : 1;
+  const effectiveAhead = queueAhead * (1 - model.cancelShareAhead * utilisation);
+  const reachesOrder = Math.max(0, volumeBudget - effectiveAhead);
+  const fraction = Math.max(0, Math.min(1, reachesOrder / orderSize));
   return { fillFraction: fraction, lotsNeededForFullFill };
 }
 
