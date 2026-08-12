@@ -146,8 +146,11 @@ straight to Coinbase, so there is no backend to host.
 `npm run dev` runs the same app locally against the live feed. The whole
 surface is one screen: depth of book on either side of a metrics column,
 a hypothetical order probe below, and the fill-probability bracket across
-the three queue models. Dark by default, respects `prefers-color-scheme`,
-with a manual toggle in the header for the times the OS is wrong.
+the three queue models. A header selector switches between BTC-USD,
+ETH-USD, and SOL-USD — each swap tears down the feed and starts a fresh
+book from a clean snapshot. Dark by default, respects
+`prefers-color-scheme`, with a manual toggle in the header for the times
+the OS is wrong.
 
 The feed endpoint is configurable: set `VITE_WS_URL` at build time to
 point the app at a staging feed, a snapshot proxy, or a local replay of

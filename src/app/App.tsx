@@ -18,7 +18,19 @@ import type { FillEstimate, FillRange } from "../lib/queue/fill.js";
 import { Instrument, Side } from "../lib/types.js";
 
 const BTC = new Instrument("BTC-USD", "0.01", "0.00000001");
-const PRODUCT_ID = "BTC-USD";
+
+/** Products offered in the header selector. Every Coinbase USD spot book here
+ *  shares the same tick (0.01) and lot (1e-8) grid, so `BTC`'s Instrument
+ *  doubles as the formatting grid for all of them; only the venue product id
+ *  and the base-currency label change. */
+export const PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD"] as const;
+export type Product = (typeof PRODUCTS)[number];
+const INSTRUMENTS: Record<Product, Instrument> = {
+  "BTC-USD": BTC,
+  "ETH-USD": new Instrument("ETH-USD", "0.01", "0.00000001"),
+  "SOL-USD": new Instrument("SOL-USD", "0.01", "0.00000001"),
+};
+const baseOf = (product: Product): string => product.slice(0, product.indexOf("-"));
 
 /** Optional feed override. Defaults to Coinbase's public feed; set at build
  *  time to point at a staging feed, a snapshot proxy, or a local replay
@@ -83,6 +95,7 @@ export function App(): JSX.Element {
   const [vh, setVh] = useState<number>(typeof window === "undefined" ? 900 : window.innerHeight);
   const [clock, setClock] = useState<string>(() => new Date().toISOString().slice(11, 19) + "Z");
 
+  const [product, setProduct] = useState<Product>("BTC-USD");
   const [side, setSide] = useState<Side>(Side.Bid);
   const [offset, setOffset] = useState<number>(2);
   // Defaults chosen so the first thing you see is an actual range across the
@@ -101,11 +114,19 @@ export function App(): JSX.Element {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // The feed. Started once, torn down on unmount.
+  // The feed. Recreated whenever the selected product changes; the previous
+  // one is torn down and all the running counters reset so the new book
+  // starts from a clean slate rather than inheriting the old one's stats.
   useEffect(() => {
+    bookAgeAnchorRef.current = null;
+    lastMsgCountRef.current = 0;
+    msgWindowRef.current = [];
+    setState(null);
+    setMsgsPerSec(0);
+
     const feed = new Feed({
-      instrument: BTC,
-      productId: PRODUCT_ID,
+      instrument: INSTRUMENTS[product],
+      productId: product,
       ...(WS_URL ? { websocketUrl: WS_URL } : {}),
     });
     feedRef.current = feed;
@@ -125,7 +146,7 @@ export function App(): JSX.Element {
       feed.stop();
       feedRef.current = null;
     };
-  }, []);
+  }, [product]);
 
   // Rolling 1s messages-per-second window and the UTC clock — both driven
   // by a single 500ms interval so the header ticks with the metrics rather
@@ -159,8 +180,8 @@ export function App(): JSX.Element {
 
   // Derived render values, all null-safe against a pre-live book.
   const view = useMemo(() => derive({
-    state, depth, imbalanceDepth, side, offset, sizeInput, budgetInput,
-  }), [state, depth, imbalanceDepth, side, offset, sizeInput, budgetInput]);
+    state, depth, imbalanceDepth, side, offset, sizeInput, budgetInput, product,
+  }), [state, depth, imbalanceDepth, side, offset, sizeInput, budgetInput, product]);
 
   const bookAge = bookAgeAnchorRef.current === null
     ? "—"
@@ -186,6 +207,8 @@ export function App(): JSX.Element {
         }}
       >
         <Header
+          product={product}
+          onProduct={setProduct}
           clock={clock}
           theme={theme}
           onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
@@ -288,6 +311,7 @@ function ThemeStyles(): JSX.Element {
         align-items: start;
       }
       .obp-theme-btn:hover { color: var(--text-hi); border-color: var(--text-hi); }
+      .obp-product-btn:hover { color: var(--text-hi); }
       .obp-step:hover { color: var(--text-hi); background: var(--line); }
       .obp-input:focus { outline: none; border-color: var(--accent); }
       @media (max-width: 1100px) {
@@ -305,6 +329,7 @@ function ThemeStyles(): JSX.Element {
 // ─────────────────────────────── header ──────────────────────────────────
 
 function Header(props: {
+  product: Product; onProduct: (p: Product) => void;
   clock: string; theme: "dark" | "light"; onToggleTheme: () => void;
 }): JSX.Element {
   return (
@@ -313,17 +338,39 @@ function Header(props: {
         width: "100%",
         maxWidth: 1680,
         display: "flex",
-        alignItems: "baseline",
+        alignItems: "center",
         justifyContent: "space-between",
         gap: "var(--s4)",
         borderBottom: "1px solid var(--line)",
         paddingBottom: "var(--s3)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--s4)", minWidth: 0 }}>
-        <span style={{ fontSize: "var(--t-num)", fontWeight: 700, color: "var(--text-hi)", letterSpacing: "0.04em" }}>
-          {PRODUCT_ID}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--s4)", minWidth: 0, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", border: "1px solid var(--line-2)" }}>
+          {PRODUCTS.map((p, i) => {
+            const selected = p === props.product;
+            return (
+              <button
+                key={p}
+                onClick={() => props.onProduct(p)}
+                className="obp-product-btn"
+                style={{
+                  background: selected ? "var(--panel-2)" : "transparent",
+                  color: selected ? "var(--text-hi)" : "var(--dim)",
+                  fontWeight: selected ? 700 : 400,
+                  border: "none",
+                  borderLeft: i === 0 ? "none" : "1px solid var(--line-2)",
+                  borderBottom: selected ? "2px solid var(--accent)" : "2px solid transparent",
+                  fontSize: "var(--t-num)",
+                  letterSpacing: "0.04em",
+                  padding: "4px 10px",
+                }}
+              >
+                {p}
+              </button>
+            );
+          })}
+        </div>
         <span style={{ fontSize: "var(--t-label)", color: "var(--dim)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
           Coinbase · level 2 · aggregated depth
         </span>
@@ -904,6 +951,7 @@ function derive(args: {
   offset: number;
   sizeInput: string;
   budgetInput: string;
+  product: Product;
 }): View {
   const empty: View = {
     bidRows: [], askRows: [],
@@ -990,7 +1038,7 @@ function derive(args: {
     bidDepthTotal: fmtSize(bidSum, 3),
     askDepthTotal: fmtSize(askSum, 3),
     probePriceLabel: fmtPrice(probePrice),
-    sizeLotsLabel: `${sizeLots.toLocaleString("en-US")} lots BTC`,
+    sizeLotsLabel: `${sizeLots.toLocaleString("en-US")} lots ${baseOf(args.product)}`,
     seqLabel: seqLabel(book.lastSequence()),
     fill,
   };
