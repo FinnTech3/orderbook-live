@@ -1,6 +1,6 @@
 # Frontend design brief — orderbook-live
 
-Copy the section between the `---` markers below and send it to Claude Design.
+Copy the section between the `---` markers below and hand it to a design tool.
 The response should be a single self-contained page (HTML + inline CSS / JS,
 or a React component if you prefer — the backend is easily consumed either
 way) that I'll drop in as `src/app/*` and wire to the existing `Feed` API.
