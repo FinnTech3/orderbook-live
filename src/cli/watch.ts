@@ -11,6 +11,7 @@
 import { WebSocket } from "ws";
 import { Feed } from "../lib/feed.js";
 import { estimateFill } from "../lib/queue/fill.js";
+import { sweep } from "../lib/impact.js";
 import { Instrument, Side } from "../lib/types.js";
 
 const KNOWN: Record<string, Instrument> = {
@@ -67,6 +68,16 @@ async function main(): Promise<void> {
       Object.assign(line, {
         fillLow: range.low.toFixed(3),
         fillHigh: range.high.toFixed(3),
+      });
+
+      // Aggressive-order impact: what a 0.5-unit market buy would pay,
+      // its VWAP, and the slippage against the mid in basis points.
+      const mid = book.mid();
+      const s = sweep(book, Side.Bid, instrument.toLots("0.5"));
+      Object.assign(line, {
+        buyVwap: s.vwap !== null ? instrument.formatPrice(Math.round(s.vwap)) : null,
+        buySlipBps: s.slippageTicks !== null && mid ? (s.slippageTicks / mid * 1e4).toFixed(2) : null,
+        buyExhausted: s.exhausted,
       });
     }
     console.log(JSON.stringify(line));
