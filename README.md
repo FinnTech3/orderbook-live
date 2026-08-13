@@ -34,8 +34,10 @@ Coinbase depth (captured mid-stream); a light theme ships too.
   rather than pretending there's a single answer.
 - Market-impact analytics (`src/lib/impact.ts`): walk a market order through
   the resting book and get its VWAP, the slippage against the mid, and
-  whether the book was deep enough to fill it — the aggressive-order
-  counterpart to the passive queue models, plus a cumulative depth curve.
+  whether the book was deep enough to fill it; the inverse, `costToMove` —
+  how much volume it takes to push the price N ticks (book resiliency); and a
+  cumulative depth curve. The aggressive-order counterpart to the passive
+  queue models.
 - A tiny CLI that connects to Coinbase and streams the current top of
   book as JSON, useful for verifying the engine end-to-end without any
   UI. `npm run watch BTC-USD`.

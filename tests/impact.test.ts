@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { OrderBook } from "../src/lib/book.js";
-import { depthCurve, slippageFraction, sweep } from "../src/lib/impact.js";
+import { costToMove, depthCurve, slippageFraction, sweep } from "../src/lib/impact.js";
 import { Instrument, Side } from "../src/lib/types.js";
 import type { PriceSize, Snapshot } from "../src/lib/types.js";
 
@@ -71,6 +71,31 @@ describe("slippageFraction", () => {
   it("expresses slippage as a fraction of the mid", () => {
     // 1 tick of slippage on a mid of 100 → 0.01 (100 bps).
     expect(slippageFraction(BOOK(), Side.Bid, 4)).toBeCloseTo(0.01, 9);
+  });
+});
+
+describe("costToMove", () => {
+  it("sums the liquidity below the target price for a buy", () => {
+    // Move the ask up 1 tick (to 102): must clear 101×4.
+    expect(costToMove(BOOK(), Side.Bid, 1)).toEqual({ lots: 4, notional: 404, reachable: true });
+    // Up 2 ticks (to 103): clear 101×4 + 102×6 = 10.
+    expect(costToMove(BOOK(), Side.Bid, 2)).toEqual({ lots: 10, notional: 404 + 612, reachable: true });
+  });
+
+  it("mirrors on the sell side", () => {
+    // Move the bid down 1 tick (to 98): clear 99×5.
+    expect(costToMove(BOOK(), Side.Ask, 1)).toEqual({ lots: 5, notional: 495, reachable: true });
+  });
+
+  it("reports unreachable when the book is too thin to confirm the move", () => {
+    // Target 104 is past the deepest ask (103): consume all, still unconfirmed.
+    const r = costToMove(BOOK(), Side.Bid, 3);
+    expect(r.lots).toBe(20);
+    expect(r.reachable).toBe(false);
+  });
+
+  it("is zero for a non-positive move", () => {
+    expect(costToMove(BOOK(), Side.Bid, 0).lots).toBe(0);
   });
 });
 

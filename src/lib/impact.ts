@@ -85,6 +85,49 @@ export function slippageFraction(book: OrderBook, aggressor: Side, size: number)
   return s.slippageTicks / mid;
 }
 
+export interface MoveCost {
+  /** Lots that must be taken to move the touch by the requested ticks. */
+  readonly lots: number;
+  /** Notional consumed to do it (Σ price × size), in tick·lot units. */
+  readonly notional: number;
+  /** True if the visible book actually reaches the target price — i.e. there
+   *  is resting size at or beyond it to become the new touch. When false the
+   *  move consumes everything visible and still can't be confirmed. */
+  readonly reachable: boolean;
+}
+
+/**
+ * The inverse of {@link sweep}: how much you'd have to buy (or sell) to push
+ * the touch `ticks` away from where it is now — a direct read on book
+ * resiliency. A buy must clear every ask priced below `bestAsk + ticks`; a
+ * sell must clear every bid priced above `bestBid − ticks`.
+ */
+export function costToMove(book: OrderBook, aggressor: Side, ticks: number): MoveCost {
+  const restingSide = opposite(aggressor);
+  const touch = aggressor === Side.Bid ? book.bestAsk() : book.bestBid();
+  if (touch === null || ticks <= 0) {
+    return { lots: 0, notional: 0, reachable: touch !== null };
+  }
+  const target = aggressor === Side.Bid ? touch + ticks : touch - ticks;
+  const within = (price: number): boolean =>
+    aggressor === Side.Bid ? price < target : price > target;
+
+  let lots = 0;
+  let notional = 0;
+  let reachable = false;
+  for (const level of book.levels(restingSide, 1_000_000)) {
+    if (within(level.price)) {
+      lots += level.size;
+      notional += level.price * level.size;
+    } else {
+      // The first level at/beyond the target is the wall the move stops at.
+      reachable = true;
+      break;
+    }
+  }
+  return { lots, notional, reachable };
+}
+
 export interface DepthPoint {
   readonly price: number;
   /** Cumulative lots available from the touch out to and including this level. */
