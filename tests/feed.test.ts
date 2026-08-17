@@ -108,7 +108,7 @@ const l2 = (
   changes,
 });
 
-describe("Feed — ingestion", () => {
+describe("Feed, ingestion", () => {
   it("applies a snapshot and then a delta, in order", () => {
     const { feed } = makeFeed(SNAP_PAYLOAD);
     feed.ingestSnapshot(SNAP_PAYLOAD);
@@ -173,7 +173,7 @@ describe("Feed — ingestion", () => {
   });
 });
 
-describe("Feed — WebSocket lifecycle", () => {
+describe("Feed, WebSocket lifecycle", () => {
   it("opens a socket and subscribes to the product on open", async () => {
     const { feed } = makeFeed(SNAP_PAYLOAD);
     await feed.start();
@@ -207,7 +207,7 @@ describe("Feed — WebSocket lifecycle", () => {
   });
 });
 
-describe("Feed — message routing", () => {
+describe("Feed, message routing", () => {
   it("routes l2update messages through the ingest path", async () => {
     const { feed } = makeFeed(SNAP_PAYLOAD);
     await feed.start();

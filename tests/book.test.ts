@@ -73,7 +73,7 @@ describe("OrderBook", () => {
 
   it("a transient cross inside one delta is allowed", () => {
     // The single message that both lifts the bid and moves the ask must
-    // not fail — the book is fine once the whole message is applied.
+    // not fail, the book is fine once the whole message is applied.
     const book = new OrderBook(INSTRUMENT);
     book.loadSnapshot(snapshot([level(99, 5)], [level(101, 4)]));
     book.applyDelta(delta(101, [level(102, 3)], [level(101, 0), level(103, 2)]));

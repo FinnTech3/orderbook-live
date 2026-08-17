@@ -84,7 +84,7 @@ fold instead of leaving a short column on tall displays.
   `--bid`/`--ask` text; unselected = transparent + `--dim`. Labels `BID` / `ASK`, 12px, `.14em`, `7px 0`.
 - `OFFSET FROM TOUCH` (right-hand hint `TICKS`): grid `34px 1fr 34px`; `−` / `+` buttons on `--panel-2`
   with 1px dividers (hover → `--line` bg, `--text-hi`); center shows signed offset (13px `--text-hi`)
-  and `@ 64,122.95` (10.5px `--dim`). Clamped 0–40 ticks. Default **2**.
+  and `@ 64,122.95` (10.5px `--dim`). Clamped 0 to 40 ticks. Default **2**.
 - Two inputs side by side (`ORDER SIZE` default `0.0500`, `VOLUME BUDGET` default `2.0000`):
   `--panel-2` bg, `1px solid --line-2`, `7px 8px`, 13px, focus border `--accent`, no outline.
   Sub-captions 9.5px `--dim-2`: `500 lots BTC` / `traded through level, holding window`.
@@ -101,7 +101,7 @@ fold instead of leaving a short column on tall displays.
   - range band: `top: 14px`, `height: 26px`, `background: --accent-soft`,
     `border-left/right: 2px solid --accent`, `left = low%`, `width = max(high-low, .4)%`;
   - midpoint marker: 1px `--accent`, `top: 6px`, `height: 42px`, `left = midpoint%`;
-  - end labels at `top: 44px`, `translateX(-50%)`, positions clamped to 6–94%, shown **only when the
+  - end labels at `top: 44px`, `translateX(-50%)`, positions clamped to 6 to 94%, shown **only when the
     range is ≥24% wide**; below that a single merged `low - high` label centered at `clamp(mid, 14, 86)%`;
   - axis ticks at the bottom: `0% 25 50 75 100%`, 9.5px `--dim-2`, space-between;
   - all bracket geometry transitions `190ms ease`.

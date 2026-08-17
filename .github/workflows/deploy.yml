@@ -1,7 +1,7 @@
 name: deploy-pages
 
 # Builds the Vite app and publishes it to GitHub Pages. The app is fully
-# client-side — it opens a WebSocket straight to Coinbase — so static hosting
+# client-side: it opens a WebSocket straight to Coinbase, so static hosting
 # is all it needs. Runs on every push to main.
 
 on:

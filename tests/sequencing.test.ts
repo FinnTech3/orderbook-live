@@ -32,7 +32,7 @@ function snapshot(sequence: number, bids: PriceSize[] = [{ price: 99, size: 5 }]
   return { sequence, eventTimeMs: 1_000, bids, asks };
 }
 
-describe("Synchroniser — happy path", () => {
+describe("Synchroniser, happy path", () => {
   it("starts disconnected and needs a snapshot", () => {
     const s = sync();
     expect(s.syncState).toBe(SyncState.Disconnected);
@@ -76,7 +76,7 @@ describe("Synchroniser — happy path", () => {
   });
 });
 
-describe("Synchroniser — gaps and resync", () => {
+describe("Synchroniser, gaps and resync", () => {
   it("a gap triggers resync and clears the book", () => {
     const seen: Gap[] = [];
     const s = sync(new InferredContinuityRule(), { onGap: (gap) => seen.push(gap) });
@@ -84,7 +84,7 @@ describe("Synchroniser — gaps and resync", () => {
     s.onDelta(delta(101));
     expect(s.syncState).toBe(SyncState.Synced);
 
-    // 103 does not follow 101 — sequence 102 was lost.
+    // 103 does not follow 101, sequence 102 was lost.
     expect(s.onDelta(delta(103))).toBe(false);
     expect(s.syncState).toBe(SyncState.Buffering);
     expect(s.book.bestBid()).toBeNull();
@@ -117,7 +117,7 @@ describe("Synchroniser — gaps and resync", () => {
   });
 });
 
-describe("Synchroniser — snapshots that cannot be used", () => {
+describe("Synchroniser, snapshots that cannot be used", () => {
   it("a snapshot landing in a hole is rejected", () => {
     const s = sync();
     s.onDelta(delta(110));
@@ -146,7 +146,7 @@ describe("Synchroniser — snapshots that cannot be used", () => {
   });
 });
 
-describe("Synchroniser — buffer bounds and reordering", () => {
+describe("Synchroniser, buffer bounds and reordering", () => {
   it("buffer is bounded and drops the oldest", () => {
     const s = sync(new InferredContinuityRule(), { maxBuffer: 3 });
     for (let i = 101; i <= 110; i++) s.onDelta(delta(i));
@@ -172,7 +172,7 @@ describe("Synchroniser — buffer bounds and reordering", () => {
   });
 });
 
-describe("Synchroniser — duplicates and stale", () => {
+describe("Synchroniser, duplicates and stale", () => {
   it("a duplicate delta is discarded without a resync", () => {
     const s = sync();
     s.onSnapshot(snapshot(100));
@@ -200,7 +200,7 @@ describe("Synchroniser — duplicates and stale", () => {
   });
 });
 
-describe("Synchroniser — venue rules", () => {
+describe("Synchroniser, venue rules", () => {
   it("ExplicitPredecessorRule follows the named predecessor", () => {
     const s = sync(new ExplicitPredecessorRule());
     s.onSnapshot(snapshot(100));
@@ -232,7 +232,7 @@ describe("Synchroniser — venue rules", () => {
   });
 });
 
-describe("Synchroniser — lifecycle", () => {
+describe("Synchroniser, lifecycle", () => {
   it("reset returns to disconnected", () => {
     const s = sync();
     s.onSnapshot(snapshot(100));

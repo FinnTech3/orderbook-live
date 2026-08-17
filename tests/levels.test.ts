@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PriceLevels, lowerBound } from "../src/lib/levels.js";
 import { Side } from "../src/lib/types.js";
 
-/** Deliberately naive levels — sorts on every read. Obviously correct.
+/** Deliberately naive levels, sorts on every read. Obviously correct.
  *  Used as an oracle for the differential test. */
 class ReferenceLevels {
   private readonly sizes = new Map<number, number>();
@@ -96,12 +96,12 @@ describe("PriceLevels", () => {
   it("sizeAhead for a passive bid counts all its own price and better", () => {
     const bids = new PriceLevels(Side.Bid);
     for (const [p, s] of [[95, 10], [98, 5], [99, 3]]) bids.set(p!, s!);
-    // Placing at 99 (the touch): everything at 99 is ahead (5 no — wait,
+    // Placing at 99 (the touch): everything at 99 is ahead (5 no, wait,
     // 3 at 99). Nothing strictly better than 99 exists.
     expect(bids.sizeAhead(99)).toBe(3);
     // Placing at 98: everything at 98 and everything at 99 is ahead.
     expect(bids.sizeAhead(98)).toBe(5 + 3);
-    // Placing above the touch is marketable — returns null.
+    // Placing above the touch is marketable, returns null.
     expect(bids.sizeAhead(100)).toBeNull();
   });
 

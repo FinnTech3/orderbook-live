@@ -40,7 +40,7 @@ describe("parseSnapshot", () => {
     expect(snap.sequence).toBe(999);
   });
 
-  it("filters out zero-size levels — snapshot rows can carry them", () => {
+  it("filters out zero-size levels, snapshot rows can carry them", () => {
     const snap = parseSnapshot(
       {
         sequence: 1,

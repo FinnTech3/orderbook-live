@@ -13,7 +13,7 @@ function bookAt(bids: PriceSize[], asks: PriceSize[]): OrderBook {
   return book;
 }
 
-describe("estimateFill — marketable orders", () => {
+describe("estimateFill, marketable orders", () => {
   it("a market buy at the ask fills against available depth", () => {
     const book = bookAt([{ price: 99, size: 5 }], [{ price: 100, size: 8 }]);
     const range = estimateFill(book, {
@@ -39,7 +39,7 @@ describe("estimateFill — marketable orders", () => {
       volumeBudget: 0,
     });
     expect(range.marketable).toBe(true);
-    // Only the touch is consumed here — we don't walk the book beyond it.
+    // Only the touch is consumed here, we don't walk the book beyond it.
     expect(range.low).toBeCloseTo(0.3, 6);
   });
 
@@ -56,7 +56,7 @@ describe("estimateFill — marketable orders", () => {
   });
 });
 
-describe("estimateFill — passive orders", () => {
+describe("estimateFill, passive orders", () => {
   it("counts existing size at the price as queue ahead", () => {
     const book = bookAt(
       [{ price: 99, size: 10 }],
@@ -186,7 +186,7 @@ describe("estimateFill — passive orders", () => {
   });
 });
 
-describe("estimateFill — the three models actually diverge", () => {
+describe("estimateFill, the three models actually diverge", () => {
   // Regression guard for the defect the README screenshot surfaced: with an
   // empty tail behind a hypothetical order, the cancellations-ahead split is
   // forced and every model returned an identical number, so the bracket was

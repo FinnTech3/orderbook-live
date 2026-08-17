@@ -24,13 +24,13 @@ describe("Instrument", () => {
 
   it("accepts inputs with fewer decimals than the grid", () => {
     // sizeScale is 8 for BTC but "0.5" only has 1 decimal. The parser must
-    // upscale rather than error — venues routinely trim trailing zeros.
+    // upscale rather than error, venues routinely trim trailing zeros.
     expect(btc.toLots("0.5")).toBe(50_000_000);
     expect(btc.toLots("1")).toBe(100_000_000);
     expect(btc.toTicks("100")).toBe(10_000);
   });
 
-  it("snapTicks rounds to nearest — used at the venue boundary", () => {
+  it("snapTicks rounds to nearest, used at the venue boundary", () => {
     // The strict version rejects; snap version accepts and rounds.
     expect(btc.snapTicks("64653.204")).toBe(btc.toTicks("64653.20"));
     expect(btc.snapTicks("64653.205")).toBe(btc.toTicks("64653.20") + 1);
