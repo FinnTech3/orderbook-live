@@ -2,7 +2,7 @@
  * Headless demo: connect to Coinbase, print top of book at 500ms intervals.
  *
  * Exists so the backend can be verified from a terminal, no UI, no browser.
- * Also useful for capturing fixture data — pipe it to a file, then edit the
+ * Also useful for capturing fixture data - pipe it to a file, then edit the
  * capture into a test.
  *
  * Usage:

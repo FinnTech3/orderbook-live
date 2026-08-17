@@ -46,7 +46,7 @@ export interface FeedOptions {
   readonly instrument: Instrument;
   /** Product ID in Coinbase's format, e.g. "BTC-USD". */
   readonly productId: string;
-  /** Overrides the default endpoints — used for tests, and for future
+  /** Overrides the default endpoints - used for tests, and for future
    *  Fly.io snapshot-proxy support. */
   readonly snapshotUrl?: string;
   readonly websocketUrl?: string;
@@ -226,7 +226,7 @@ export class Feed {
       return;
     }
     // The batched channel's own `snapshot` message anchors the book. We
-    // deliberately don't fetch the REST snapshot here — with no per-message
+    // deliberately don't fetch the REST snapshot here - with no per-message
     // sequences on `level2_batch`, the REST snapshot can't be aligned with
     // the diff stream, and mixing them produces crossed books.
     this.setStatus("loading-snapshot");
@@ -329,7 +329,7 @@ export class Feed {
 
   private onGap(gap: Gap): void {
     this.errorMessage =
-      `gap: expected after ${gap.expectedAfter}, got ${gap.gotSequence} — resyncing`;
+      `gap: expected after ${gap.expectedAfter}, got ${gap.gotSequence} - resyncing`;
     this.setStatus("resyncing");
     // Since the batched feed's snapshot only arrives once per subscription,
     // recovering from a gap means reconnecting the socket so a fresh

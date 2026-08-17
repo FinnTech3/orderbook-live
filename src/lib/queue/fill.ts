@@ -62,8 +62,8 @@ export interface FillRange {
  *
  * If the order price is at or across the touch it is *marketable*: it would
  * fill against resting size on the other side. In that case the queue
- * models are not the interesting question — the order goes off immediately
- * up to the available depth — and we report a straightforward fraction.
+ * models are not the interesting question - the order goes off immediately
+ * up to the available depth - and we report a straightforward fraction.
  * The queue models only matter for passive placement (price on the same
  * side as the touch, resting behind whatever is already there).
  */
@@ -105,7 +105,7 @@ export function estimateFill(
   // therefore ahead of us. Nothing is behind us yet, because our order is
   // hypothetical. The models still return different answers because a
   // real placement immediately begins to accumulate size behind, and the
-  // question is what fraction fills before your budget is spent — see
+  // question is what fraction fills before your budget is spent - see
   // the perModel breakdown below.
   const queueAtPrice = sameSide.sizeAt(price);
   const queueBetter = sizeStrictlyBetterThan(sameSide, side, price);
@@ -133,11 +133,11 @@ export function estimateFill(
  *
  * The order rests at the back of the queue at its price: `queueAhead` lots
  * sit in front of it, nothing behind it yet. Two things clear the lots
- * ahead over the holding window — trades, which chew through from the
+ * ahead over the holding window - trades, which chew through from the
  * front, and cancellations, which can vanish from anywhere. We only observe
  * the net drainage (`volumeBudget`), not the split, so each model names an
  * assumption for how much of the queue ahead is cancellation-driven:
- * `model.cancelShareAhead`. Pessimistic assumes none of it (pure FIFO —
+ * `model.cancelShareAhead`. Pessimistic assumes none of it (pure FIFO -
  * you must trade through the whole queue), optimistic assumes most of it
  * cancels out from in front of you, proportional sits between.
  *
@@ -173,7 +173,7 @@ function estimateForModel(args: {
   // How much the level turns over relative to what has to clear for a full
   // fill. Bounded to [0, 1] so a modest budget cannot over-credit assumed
   // cancellations. When there is no queue ahead, utilisation is irrelevant
-  // — everything in the budget reaches the order directly.
+  // - everything in the budget reaches the order directly.
   const utilisation = lotsNeededForFullFill > 0
     ? Math.min(1, volumeBudget / lotsNeededForFullFill)
     : 1;
@@ -192,7 +192,7 @@ function isMarketable(book: OrderBook, side: Side, price: number): boolean {
 function sizeStrictlyBetterThan(
   levels: PriceLevels, side: Side, price: number,
 ): number {
-  // "Better" means closer to the touch — higher prices on the bid side,
+  // "Better" means closer to the touch - higher prices on the bid side,
   // lower on the ask. Anything strictly better than our price would fill
   // before us at our price, so it counts as being ahead.
   let total = 0;

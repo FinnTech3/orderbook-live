@@ -21,7 +21,7 @@ import type { PriceSize } from "./types.js";
 export class PriceLevels {
   readonly side: Side;
   private readonly sizes = new Map<number, number>();
-  /** Occupied prices, ascending. Same for both sides — the best price is
+  /** Occupied prices, ascending. Same for both sides - the best price is
    *  the last element on the bid side and the first on the ask. */
   private readonly prices: number[] = [];
 
@@ -103,7 +103,7 @@ export class PriceLevels {
     return total;
   }
 
-  /** Size ahead of a hypothetical passive order at `price` — everything
+  /** Size ahead of a hypothetical passive order at `price` - everything
    *  that would be filled before it.  Returns null if `price` is on the
    *  wrong side of the touch (i.e. would cross), because that is a
    *  marketable order and needs separate handling. */

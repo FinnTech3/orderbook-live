@@ -1,7 +1,7 @@
 /**
  * Market-order impact: what it actually costs to cross the spread.
  *
- * The book's headline metrics — spread, mid, microprice, imbalance — describe
+ * The book's headline metrics - spread, mid, microprice, imbalance - describe
  * the touch. They say nothing about what happens when you send an order big
  * enough to eat through it. This walks the resting depth on the far side and
  * reports the volume-weighted average fill price, the slippage against the
@@ -90,7 +90,7 @@ export interface MoveCost {
   readonly lots: number;
   /** Notional consumed to do it (Σ price × size), in tick·lot units. */
   readonly notional: number;
-  /** True if the visible book actually reaches the target price — i.e. there
+  /** True if the visible book actually reaches the target price - i.e. there
    *  is resting size at or beyond it to become the new touch. When false the
    *  move consumes everything visible and still can't be confirmed. */
   readonly reachable: boolean;
@@ -98,7 +98,7 @@ export interface MoveCost {
 
 /**
  * The inverse of {@link sweep}: how much you'd have to buy (or sell) to push
- * the touch `ticks` away from where it is now — a direct read on book
+ * the touch `ticks` away from where it is now - a direct read on book
  * resiliency. A buy must clear every ask priced below `bestAsk + ticks`; a
  * sell must clear every bid priced above `bestBid − ticks`.
  */
@@ -136,7 +136,7 @@ export interface DepthPoint {
   readonly cumulativeNotional: number;
 }
 
-/** The cumulative depth curve for one side, best-first — the data behind a
+/** The cumulative depth curve for one side, best-first - the data behind a
  *  depth chart, and the input a caller can bisect to answer "how many lots
  *  can I take before slipping N ticks?". */
 export function depthCurve(book: OrderBook, side: Side, maxLevels = 50): DepthPoint[] {

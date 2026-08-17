@@ -28,13 +28,13 @@ export interface QueueModel {
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number;
   /**
    * The fraction of the queue *ahead* of a resting order that this model
-   * assumes clears by cancellation over a holding window — as opposed to
+   * assumes clears by cancellation over a holding window - as opposed to
    * only clearing when trades chew through it from the front.
    *
    * This is the parameter that makes the three models diverge for a *newly
    * placed* order. The `cancellationsAhead` arithmetic above collapses to a
    * single answer when nothing rests behind the order (always true at the
-   * instant of placement — see fill.ts), because with an empty tail every
+   * instant of placement - see fill.ts), because with an empty tail every
    * cancellation is forced to come from ahead. The live viewer therefore
    * brackets fill probability with an explicit, named assumption about how
    * much of the queue ahead is cancellation-driven rather than deriving it
@@ -91,7 +91,7 @@ export class OptimisticQueue implements QueueModel {
  *  which makes this mildly optimistic in practice. */
 export class ProportionalQueue implements QueueModel {
   readonly name = "proportional";
-  /** A moderate share of the queue ahead cancels — between the FIFO floor
+  /** A moderate share of the queue ahead cancels - between the FIFO floor
    *  and the front-loaded ceiling. */
   readonly cancelShareAhead = 0.55;
   cancellationsAhead(ahead: number, behind: number, cancelled: number): number {
