@@ -221,7 +221,7 @@ a:hover{color:var(--text-hi);}
           <div style="font-size:var(--t-hero);line-height:0.9;color:var(--text-hi);">{{ midpointPct }}</div>
           <div style="display:flex;flex-direction:column;gap:1px;padding-bottom:4px;">
             <span style="font-size:var(--t-label);letter-spacing:0.1em;color:var(--dim);text-transform:uppercase;">midpoint estimate</span>
-            <span style="font-size:var(--t-body);color:var(--accent);">range {{ lowPct }} — {{ highPct }}</span>
+            <span style="font-size:var(--t-body);color:var(--accent);">range {{ lowPct }} - {{ highPct }}</span>
           </div>
         </div>
 
@@ -292,7 +292,7 @@ function fmtSize(lots, dp){
 }
 function clamp(x,a,b){ return x < a ? a : x > b ? b : x; }
 
-/* Local stand-in for ./lib/feed — same shape as the real Feed/book surface. */
+/* Local stand-in for ./lib/feed - same shape as the real Feed/book surface. */
 class SimBook {
   constructor(){
     const mid = 6412300; // ticks
@@ -354,7 +354,7 @@ class SimBook {
   lastSequence(){ return this.seq; }
 }
 
-/* Local stand-in for estimateFill() — three queue-position models. */
+/* Local stand-in for estimateFill() - three queue-position models. */
 function estimateFill(book, o){
   const marketable = o.side === 'bid' ? o.price >= book.bestAsk() : o.price <= book.bestBid();
   const Q = book.sizeAt(o.side, o.price);      // lots resting ahead at our price
@@ -436,7 +436,7 @@ class Component extends DCLogic {
         clock:new Date().toISOString().slice(11,19)+'Z' };
       if (Math.random() < 0.004){
         st.gaps = this.state.gaps + 1;
-        st.errorMessage = 'sequence gap — resynchronising from snapshot';
+        st.errorMessage = 'sequence gap - resynchronising from snapshot';
         clearTimeout(this.errT);
         this.errT = setTimeout(()=>this.setState({errorMessage:''}), 2600);
       }
@@ -538,11 +538,11 @@ class Component extends DCLogic {
       brLabelHi: clamp(lowP + width, 6, 94).toFixed(2) + '%',
       splitVis: width >= 24 ? 'block' : 'none',
       mergeVis: width >= 24 ? 'none' : 'block',
-      mergedLabel: (highP - lowP) < 0.15 ? pct(r.low) : pct(r.low) + ' — ' + pct(r.high),
+      mergedLabel: (highP - lowP) < 0.15 ? pct(r.low) : pct(r.low) + ' - ' + pct(r.high),
       brMerge: clamp(lowP + width/2, 14, 86).toFixed(2) + '%',
       brMid: clamp(r.midpoint*100,0,100).toFixed(2) + '%',
       marketable: r.marketable,
-      marketableLabel: r.marketable ? 'marketable — would cross' : 'passive · resting',
+      marketableLabel: r.marketable ? 'marketable - would cross' : 'passive · resting',
       marketableColor: r.marketable ? 'var(--amber)' : 'var(--dim-2)',
       models: r.perModel.map(m => ({
         name: m.model, note: m.note, pct: pct(m.fillFraction),

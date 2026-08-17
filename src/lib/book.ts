@@ -3,8 +3,8 @@
  *
  * Applies snapshots and deltas to two PriceLevels containers, one per side,
  * and exposes the microstructural quantities a strategy actually reads. It
- * knows nothing about which venue produced the events — that is the
- * adapter's job — and nothing about how they arrived in order, which is the
+ * knows nothing about which venue produced the events - that is the
+ * adapter's job - and nothing about how they arrived in order, which is the
  * sequencing layer's.
  */
 
