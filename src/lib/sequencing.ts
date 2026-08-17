@@ -194,7 +194,7 @@ export class Synchroniser {
   /**
    * A snapshot only usable if the buffer can be joined to it without a
    * hole. If the earliest buffered delta starts *after* the snapshot ends,
-   * messages were lost in between and no replay can recover them — reject
+   * messages were lost in between and no replay can recover them - reject
    * the snapshot and keep buffering. The caller should fetch a newer one.
    */
   onSnapshot(snapshot: Snapshot): boolean {
@@ -244,7 +244,7 @@ export class Synchroniser {
 
   private bufferDelta(delta: DepthDelta): void {
     if (this.buffer.length >= this.maxBuffer) {
-      // Drop the oldest — a future snapshot is most likely to supersede
+      // Drop the oldest - a future snapshot is most likely to supersede
       // them anyway.
       this.buffer.shift();
       this.stats.deltasDroppedOverflow++;

@@ -10,7 +10,7 @@ The interesting question this project answers is not "what price is BTC at?"
 Any exchange page shows that. It is: *if I placed a passive order 3 ticks
 below the touch right now, what fraction of it would probably fill in the
 next 30 seconds?* That number depends on assumptions about where in the
-queue the cancellations you observe were sitting — and those assumptions
+queue the cancellations you observe were sitting - and those assumptions
 disagree. Showing the disagreement, live, was the point of the whole
 exercise.
 
@@ -20,7 +20,7 @@ exercise.
 
 The hero panel is the point of the whole thing: place a hypothetical
 passive order and the three queue models disagree about how much of it
-fills — here, anywhere from 31% to 85%. The honest answer is the range,
+fills - here, anywhere from 31% to 85%. The honest answer is the range,
 not a single number. The screenshot is the real UI rendering real
 Coinbase depth (captured mid-stream); a light theme ships too.
 
@@ -34,7 +34,7 @@ Coinbase depth (captured mid-stream); a light theme ships too.
   rather than pretending there's a single answer.
 - Market-impact analytics (`src/lib/impact.ts`): walk a market order through
   the resting book and get its VWAP, the slippage against the mid, and
-  whether the book was deep enough to fill it; the inverse, `costToMove` —
+  whether the book was deep enough to fill it; the inverse, `costToMove` -
   how much volume it takes to push the price N ticks (book resiliency); and a
   cumulative depth curve. The aggressive-order counterpart to the passive
   queue models.
@@ -79,18 +79,18 @@ not touching the state machine. See `src/lib/sequencing.ts`.
 
 **Coinbase's public batched feed.** The `level2_batch` channel Coinbase
 serves without authentication does not carry per-message sequence
-numbers — only the authenticated `level2` channel does. The ingest layer
+numbers - only the authenticated `level2` channel does. The ingest layer
 synthesizes sequences from arrival order, trusting TCP ordering, and
 uses the batched channel's own `snapshot` message as the anchor rather
 than mixing REST and WS snapshots (which have no sequence to align
 against and produced crossed books during development). This is called
-out here because the alternative — quietly reconciling incompatible
-snapshots — is the sort of thing that breaks a book once every few
+out here because the alternative - quietly reconciling incompatible
+snapshots - is the sort of thing that breaks a book once every few
 minutes without an obvious cause. Explicit was better than clever. See
 `src/lib/feed.ts`.
 
 **A transient cross inside one message is allowed.** A single delta that
-both lifts the bid and moves the ask forward must not fail — the book
+both lifts the bid and moves the ask forward must not fail - the book
 is fine once the whole message is applied. The check happens after both
 sides update, not eagerly during. See `src/lib/book.ts`.
 
@@ -124,13 +124,13 @@ whichever model flatters your intuition. `estimateFill` returns
    redelivers a fresh WS snapshot anyway).
 4. **The bracket that was secretly a point.** Taking the first
    screenshot for this README is what caught it: the "range" across the
-   three queue models rendered as `100.0% — 100.0%`, and not just
-   because the budget was generous — the three models were returning
+   three queue models rendered as `100.0% - 100.0%`, and not just
+   because the budget was generous - the three models were returning
    *identical* numbers in every scenario. The cause was subtle. The
    original `estimateForModel` distributed the volume budget via each
    model's `cancellationsAhead` rule, but a freshly placed order has
    nothing resting behind it, and with an empty tail the arithmetic
-   `clamp` forces every cancellation to come from ahead — so all three
+   `clamp` forces every cancellation to come from ahead - so all three
    models collapse to the same answer. The headline feature was inert
    and the tests hadn't caught it, because `≤` assertions pass happily
    when both sides are equal. Fixed by giving each model an explicit,
@@ -139,21 +139,21 @@ whichever model flatters your intuition. `estimateFill` returns
    through it, scaled by how much the level actually turns over. The
    models now genuinely diverge, and `tests/fill.test.ts` gained four
    tests that assert a *strictly* non-degenerate range and the
-   pessimistic < proportional < optimistic ordering — the guard that
+   pessimistic < proportional < optimistic ordering - the guard that
    was missing.
 
 ## The viewer
 
 Hosted at **https://finntech3.github.io/orderbook-live/** (GitHub Pages,
 built and deployed by `.github/workflows/deploy.yml` on every push to
-`main`). It runs entirely in the browser — the page opens a WebSocket
+`main`). It runs entirely in the browser - the page opens a WebSocket
 straight to Coinbase, so there is no backend to host.
 
 `npm run dev` runs the same app locally against the live feed. The whole
 surface is one screen: depth of book on either side of a metrics column,
 a hypothetical order probe below, and the fill-probability bracket across
 the three queue models. A header selector switches between BTC-USD,
-ETH-USD, and SOL-USD — each swap tears down the feed and starts a fresh
+ETH-USD, and SOL-USD - each swap tears down the feed and starts a fresh
 book from a clean snapshot. Dark by default, respects
 `prefers-color-scheme`, with a manual toggle in the header for the times
 the OS is wrong.
@@ -167,7 +167,7 @@ uses Coinbase's public feed.
 The design this UI is built to lives at
 [`docs/DESIGN_BRIEF.md`](docs/DESIGN_BRIEF.md) and
 [`docs/design/Order_Book_Probe.dc.html`](docs/design/Order_Book_Probe.dc.html)
-— the second is the design-fidelity reference, not production code.
+- the second is the design-fidelity reference, not production code.
 `src/app/App.tsx` is the real implementation, wired to the `Feed` and
 `estimateFill` above rather than a stand-in book.
 

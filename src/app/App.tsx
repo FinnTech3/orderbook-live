@@ -1,5 +1,5 @@
 /**
- * The one screen. Built to the Order Book Probe design spec — tokens,
+ * The one screen. Built to the Order Book Probe design spec - tokens,
  * layout, motion, and information density are all set by the brief; only
  * the data plumbing is code I owned to write.
  *
@@ -45,7 +45,7 @@ function clamp(x: number, a: number, b: number): number {
 }
 
 function fmtPrice(ticks: number | null): string {
-  if (ticks === null || !Number.isFinite(ticks)) return "—";
+  if (ticks === null || !Number.isFinite(ticks)) return "-";
   return BTC.fromTicks(ticks).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -99,7 +99,7 @@ export function App(): JSX.Element {
   const [side, setSide] = useState<Side>(Side.Bid);
   const [offset, setOffset] = useState<number>(2);
   // Defaults chosen so the first thing you see is an actual range across the
-  // three models, not a saturated 100% — an order sized near the queue ahead
+  // three models, not a saturated 100% - an order sized near the queue ahead
   // with a budget that only partly clears it is where the models disagree.
   const [sizeInput, setSizeInput] = useState("0.1500");
   const [budgetInput, setBudgetInput] = useState("0.2000");
@@ -148,7 +148,7 @@ export function App(): JSX.Element {
     };
   }, [product]);
 
-  // Rolling 1s messages-per-second window and the UTC clock — both driven
+  // Rolling 1s messages-per-second window and the UTC clock - both driven
   // by a single 500ms interval so the header ticks with the metrics rather
   // than on some other cadence.
   useEffect(() => {
@@ -184,7 +184,7 @@ export function App(): JSX.Element {
   }), [state, depth, imbalanceDepth, side, offset, sizeInput, budgetInput, product]);
 
   const bookAge = bookAgeAnchorRef.current === null
-    ? "—"
+    ? "-"
     : `${Math.floor((Date.now() - bookAgeAnchorRef.current) / 1000)}s`;
 
   return (
@@ -195,7 +195,7 @@ export function App(): JSX.Element {
           minHeight: "100vh",
           background: "var(--bg)",
           color: "var(--text)",
-          fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
           fontSize: "var(--t-body)",
           fontVariantNumeric: "tabular-nums",
           padding: "var(--s4)",
@@ -259,7 +259,7 @@ function ThemeStyles(): JSX.Element {
         --bg:#0a0c0d; --panel:#0f1214; --panel-2:#131719; --line:#1f2528; --line-2:#2b3236;
         --text:#c7d0d3; --text-hi:#eef3f4; --dim:#6a7679; --dim-2:#4a5457;
         --bid:#4f8f6b; --bid-bar:rgba(79,143,107,0.17);
-        --ask:#b0645a; --ask-bar:rgba(176,100,90,0.17);
+        --ask:#c26a72; --ask-bar:rgba(194,106,114,0.16);
         --amber:#c99a3a; --accent:#7396c4; --accent-soft:rgba(115,150,196,0.16);
         --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:36px;
         --t-micro:9.5px; --t-label:10.5px; --t-body:12px; --t-num:13px;
@@ -267,22 +267,22 @@ function ThemeStyles(): JSX.Element {
       }
       @media (prefers-color-scheme: light) {
         :root {
-          --bg:#f2f1ee; --panel:#fbfaf8; --panel-2:#f4f3f0; --line:#dedbd4; --line-2:#c9c5bc;
-          --text:#2b3033; --text-hi:#101315; --dim:#6f7679; --dim-2:#9aa0a2;
-          --bid:#2f6b4c; --bid-bar:rgba(47,107,76,0.13);
-          --ask:#96473c; --ask-bar:rgba(150,71,60,0.13);
-          --amber:#8a6512; --accent:#33557f; --accent-soft:rgba(51,85,127,0.14);
+          --bg:#ffffff; --panel:#ffffff; --panel-2:#f3f4f6; --line:#e6e8eb; --line-2:#d2d6db;
+          --text:#343b43; --text-hi:#0f1419; --dim:#697079; --dim-2:#9aa1a9;
+          --bid:#1f6b45; --bid-bar:rgba(31,107,69,0.12);
+          --ask:#a5344a; --ask-bar:rgba(165,52,74,0.12);
+          --amber:#8a6512; --accent:#1b4a7a; --accent-soft:rgba(27,74,122,0.12);
         }
       }
       :root[data-theme="dark"] {
         --bg:#0a0c0d; --panel:#0f1214; --panel-2:#131719; --line:#1f2528; --line-2:#2b3236;
         --text:#c7d0d3; --text-hi:#eef3f4; --dim:#6a7679; --dim-2:#4a5457;
         --bid:#4f8f6b; --bid-bar:rgba(79,143,107,0.17);
-        --ask:#b0645a; --ask-bar:rgba(176,100,90,0.17);
+        --ask:#c26a72; --ask-bar:rgba(194,106,114,0.16);
         --amber:#c99a3a; --accent:#7396c4; --accent-soft:rgba(115,150,196,0.16);
       }
       :root[data-theme="light"] {
-        --bg:#f2f1ee; --panel:#fbfaf8; --panel-2:#f4f3f0; --line:#dedbd4; --line-2:#c9c5bc;
+        --bg:#ffffff; --panel:#ffffff; --panel-2:#f3f4f6; --line:#e6e8eb; --line-2:#d2d6db;
         --text:#2b3033; --text-hi:#101315; --dim:#6f7679; --dim-2:#9aa0a2;
         --bid:#2f6b4c; --bid-bar:rgba(47,107,76,0.13);
         --ask:#96473c; --ask-bar:rgba(150,71,60,0.13);
@@ -765,18 +765,18 @@ function HeroPanel({ view }: { view: View }): JSX.Element {
             color: marketable ? "var(--amber)" : "var(--dim-2)",
             textTransform: "uppercase",
           }}>
-            {marketable ? "marketable — would cross" : "passive · resting"}
+            {marketable ? "marketable, would cross" : "passive · resting"}
           </span>
         </div>
 
         <div style={{ display: "flex", alignItems: "flex-end", gap: "var(--s3)" }}>
           <div style={{ fontSize: "var(--t-hero)", lineHeight: 0.9, color: "var(--text-hi)" }}>
-            {fill ? pct(fill.midpoint) : "—"}
+            {fill ? pct(fill.midpoint) : "-"}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingBottom: 4 }}>
             <span style={{ ...labelStyle, letterSpacing: "0.1em" }}>midpoint estimate</span>
             <span style={{ fontSize: "var(--t-body)", color: "var(--accent)" }}>
-              range {fill ? pct(fill.low) : "—"} — {fill ? pct(fill.high) : "—"}
+              range {fill ? pct(fill.low) : "-"} to {fill ? pct(fill.high) : "-"}
             </span>
           </div>
         </div>
@@ -800,12 +800,12 @@ function HeroPanel({ view }: { view: View }): JSX.Element {
           }} />
           {splitVis ? (
             <>
-              <BracketLabel value={fill ? pct(fill.low) : "—"} pos={`${clamp(low, 6, 94).toFixed(2)}%`} />
-              <BracketLabel value={fill ? pct(fill.high) : "—"} pos={`${clamp(low + width, 6, 94).toFixed(2)}%`} />
+              <BracketLabel value={fill ? pct(fill.low) : "-"} pos={`${clamp(low, 6, 94).toFixed(2)}%`} />
+              <BracketLabel value={fill ? pct(fill.high) : "-"} pos={`${clamp(low + width, 6, 94).toFixed(2)}%`} />
             </>
           ) : (
             <BracketLabel
-              value={fill ? `${pct(fill.low)} — ${pct(fill.high)}` : "—"}
+              value={fill ? `${pct(fill.low)} to ${pct(fill.high)}` : "-"}
               pos={`${clamp(low + width / 2, 14, 86).toFixed(2)}%`}
             />
           )}
@@ -955,12 +955,12 @@ function derive(args: {
 }): View {
   const empty: View = {
     bidRows: [], askRows: [],
-    spreadUsd: "—", spreadTicks: "—", spreadBps: "—",
-    mid: "—", micro: "—", microDrift: "—",
-    imbBidPct: "—", imbAskPct: "—", imbSigned: "—", imbBidWidth: "0%",
-    bidDepthTotal: "—", askDepthTotal: "—",
-    probePriceLabel: "—", sizeLotsLabel: "—",
-    seqLabel: "—",
+    spreadUsd: "-", spreadTicks: "-", spreadBps: "-",
+    mid: "-", micro: "-", microDrift: "-",
+    imbBidPct: "-", imbAskPct: "-", imbSigned: "-", imbBidWidth: "0%",
+    bidDepthTotal: "-", askDepthTotal: "-",
+    probePriceLabel: "-", sizeLotsLabel: "-",
+    seqLabel: "-",
     fill: null,
   };
   if (!args.state) return empty;
@@ -1022,11 +1022,11 @@ function derive(args: {
     spreadTicks: `${spreadTicks} ${spreadTicks === 1 ? "tick" : "ticks"}`,
     spreadBps: `${(spreadTicks / midTicks * 1e4).toFixed(3)} bps`,
     mid: fmtPrice(midTicks),
-    micro: microTicks === null ? "—"
+    micro: microTicks === null ? "-"
       : BTC.fromTicks(microTicks).toLocaleString("en-US", {
           minimumFractionDigits: 4, maximumFractionDigits: 4,
         }),
-    microDrift: microTicks === null ? "—"
+    microDrift: microTicks === null ? "-"
       : (() => {
           const drift = BTC.fromTicks(microTicks - midTicks);
           return `${drift >= 0 ? "+" : ""}${drift.toFixed(4)}`;
@@ -1045,5 +1045,5 @@ function derive(args: {
 }
 
 function seqLabel(n: number | null): string {
-  return n === null ? "—" : n.toLocaleString("en-US");
+  return n === null ? "-" : n.toLocaleString("en-US");
 }

@@ -7,7 +7,7 @@
  *
  * Coinbase uses a monotonically increasing `sequence` number per product,
  * shared between the snapshot and the diff stream. That is the cleanest
- * possible venue for this project — the sequencing rule is straight
+ * possible venue for this project - the sequencing rule is straight
  * adjacency and there is no futures-vs-spot split to worry about.
  *
  * The adapter is written to be venue-agnostic in shape: swapping in Kraken
@@ -127,7 +127,7 @@ export function parseL2Update(
  * Coinbase's websocket first message on subscribe is `type: snapshot`,
  * shaped like a snapshot but arriving on the diff channel. This handles
  * that case, converting it into the same Snapshot type used by the REST
- * fetcher. Note that this snapshot has no sequence — the *next* l2update
+ * fetcher. Note that this snapshot has no sequence - the *next* l2update
  * carries the sequence that should be treated as its anchor, so we return
  * null and let the sequencing layer use the first delta's sequence.
  */

@@ -8,14 +8,14 @@ Audience is quant/HFT hiring managers; the design goal is trading-desk restraint
 density, not consumer crypto polish.
 
 ## About the Design Files
-`Order Book Probe.dc.html` is a **design reference created in HTML** — a working prototype showing
+`Order Book Probe.dc.html` is a **design reference created in HTML** - a working prototype showing
 intended look, density, motion, and behavior. It is **not production code to copy directly**.
 The task is to recreate this design in the target codebase's environment (React/TS is the obvious
 fit here) using its existing patterns. `support.js` is only the prototype's runtime shim; discard it.
 
 Two things in the prototype are **stand-ins that must be deleted** on integration:
-- `class SimBook` — a local simulated book. Replace with the real `Feed` from `./lib/feed`.
-- `function estimateFill(...)` — a local stub. Replace with `estimateFill` from `./lib/queue/fill`.
+- `class SimBook` - a local simulated book. Replace with the real `Feed` from `./lib/feed`.
+- `function estimateFill(...)` - a local stub. Replace with `estimateFill` from `./lib/queue/fill`.
 
 Both were written to the fixed backend surface below, so the render layer needs no changes:
 
@@ -49,7 +49,7 @@ Left, baseline-aligned row (`gap: 16px`): product id `BTC-USD` (13px/700, `--tex
 Right: UTC clock `HH:MM:SSZ` (10.5px, `--dim`) and a theme toggle button
 (transparent, `1px solid --line-2`, `5px 10px`, 10.5px uppercase; hover → `--text-hi` text + border).
 
-### 2. Book band — grid `minmax(0,1fr) 190px minmax(0,1fr)`, `gap: 12px`, `align-items: start`
+### 2. Book band - grid `minmax(0,1fr) 190px minmax(0,1fr)`, `gap: 12px`, `align-items: start`
 
 **Bid panel** (`--panel` bg, `1px solid --line`, `padding: 12px`)
 - Column header row, grid `1fr 1fr 1fr`, 10.5px uppercase `--dim`, `.12em`, `border-bottom: 1px solid --line`, `padding-bottom: 6px`: `BIDS` (colored `--bid`, left) / `SIZE` (right) / `PRICE` (right).
@@ -60,7 +60,7 @@ Right: UTC clock `HH:MM:SSZ` (10.5px, `--dim`) and a theme toggle button
   `transition: width 190ms cubic-bezier(.2,.6,.3,1)`.
   Probe marker: 2px `--accent` vertical rule at the row's inner edge when that price === probe price.
 
-**Ask panel** — mirror image: header `PRICE / SIZE / ASKS` (`ASKS` colored `--ask`, right),
+**Ask panel** - mirror image: header `PRICE / SIZE / ASKS` (`ASKS` colored `--ask`, right),
 row order price / size / cumulative, bar **anchored left**, `--ask-bar`.
 
 **Metrics column** (190px, `--panel`, `padding: 12px`, flex column, `gap: 16px`)
@@ -76,7 +76,7 @@ row order price / size / cumulative, bar **anchored left**, `--ask-bar`.
 (recomputed on resize) unless the `depthLevels` prop overrides it. This keeps the band ending near the
 fold instead of leaving a short column on tall displays.
 
-### 3. Probe + fill band — grid `minmax(320px,400px) minmax(0,1fr)`, `gap: 12px`, `align-items: stretch`
+### 3. Probe + fill band - grid `minmax(320px,400px) minmax(0,1fr)`, `gap: 12px`, `align-items: stretch`
 
 **Passive order probe** (left panel, flex column, `gap: 12px`)
 - Title row: `PASSIVE ORDER PROBE` (10.5px, `--text-hi`, `.14em`) / `HYPOTHETICAL · NOT SENT` (9.5px, `--dim-2`).
@@ -89,20 +89,20 @@ fold instead of leaving a short column on tall displays.
   `--panel-2` bg, `1px solid --line-2`, `7px 8px`, 13px, focus border `--accent`, no outline.
   Sub-captions 9.5px `--dim-2`: `500 lots BTC` / `traded through level, holding window`.
 
-**Expected fill fraction — the hero** (right panel, grid `minmax(0,1.1fr) minmax(0,1fr)`, `gap: 24px`, `padding: 16px`)
+**Expected fill fraction - the hero** (right panel, grid `minmax(0,1.1fr) minmax(0,1fr)`, `gap: 24px`, `padding: 16px`)
 
 *Left cell:*
 - Title row: `EXPECTED FILL FRACTION` / status chip `PASSIVE · RESTING` (`--dim-2`) or
-  `MARKETABLE — WOULD CROSS` (`--amber`).
+  `MARKETABLE - WOULD CROSS` (`--amber`).
 - Midpoint number at 46px `--text-hi`, `line-height: .9`, with `MIDPOINT ESTIMATE` and
-  `range 48.6% — 96.1%` (12px `--accent`) baseline-aligned beside it.
+  `range 48.6% - 96.1%` (12px `--accent`) baseline-aligned beside it.
 - **Bracket**, `position: relative; height: 86px`:
   - axis rule: full-width 2px `--line` at `top: 26px`;
   - range band: `top: 14px`, `height: 26px`, `background: --accent-soft`,
     `border-left/right: 2px solid --accent`, `left = low%`, `width = max(high-low, .4)%`;
   - midpoint marker: 1px `--accent`, `top: 6px`, `height: 42px`, `left = midpoint%`;
   - end labels at `top: 44px`, `translateX(-50%)`, positions clamped to 6–94%, shown **only when the
-    range is ≥24% wide**; below that a single merged `low — high` label centered at `clamp(mid, 14, 86)%`;
+    range is ≥24% wide**; below that a single merged `low - high` label centered at `clamp(mid, 14, 86)%`;
   - axis ticks at the bottom: `0% 25 50 75 100%`, 9.5px `--dim-2`, space-between;
   - all bracket geometry transitions `190ms ease`.
 
@@ -111,9 +111,9 @@ Header 9.5px uppercase `--dim`: `QUEUE MODEL / FILL / QUEUE AHEAD / LOTS TO FILL
 Three rows (`padding: 9px 0`, `border-bottom: 1px solid --line`): model name (12px `--text-hi`) with a
 9.5px `--dim-2` note beneath, fill % (13px `--text-hi`, right), queue ahead in BTC (3 dp), lots to fill.
 Models and notes, in order:
-1. `FIFO / no cancellation` — *lower bound · queue only drains by trades*
-2. `Uniform cancellation` — *κ=0.55 · cancels spread evenly over queue*
-3. `Front-loaded cancel` — *γ=0.80 · cancels concentrate at queue head*
+1. `FIFO / no cancellation` - *lower bound · queue only drains by trades*
+2. `Uniform cancellation` - *κ=0.55 · cancels spread evenly over queue*
+3. `Front-loaded cancel` - *γ=0.80 · cancels concentrate at queue head*
 
 Footnote paragraph, 9.5px `--dim-2`, `line-height: 1.7`, explaining that the bracket spans the
 pessimistic and optimistic models and that the budget is discounted by distance from touch.
@@ -121,7 +121,7 @@ pessimistic and optimistic models and that the budget is discounted by distance 
 ### 4. Status strip (footer, `border-top: 1px solid --line`, `padding-top: 10px`, flex-wrap, `gap: 24px`)
 10.5px uppercase `--dim`, `.1em`: a 6×6px square dot + `CONNECTED` (`--bid`) / `CONNECTING` (`--amber`);
 `SEQ <n>`, `GAPS <n>` (turns `--amber` when > 0), `MSGS <n>`, `<n> MSG/S`, `BOOK AGE <n>s`,
-and an `--amber` error message slot fed by `state.errorMessage`. **No transitions on this strip** — status changes must be instant.
+and an `--amber` error message slot fed by `state.errorMessage`. **No transitions on this strip** - status changes must be instant.
 
 ## Interactions & Behavior
 - Side toggle, offset ±, size and budget text inputs → recompute `estimateFill` on the current book snapshot every render.
@@ -171,15 +171,15 @@ Font: JetBrains Mono 400/500/700, `font-variant-numeric: tabular-nums` on the ro
 Motion: `190ms cubic-bezier(.2,.6,.3,1)` for depth/imbalance widths, `190ms ease` for bracket geometry, nothing else.
 
 ## Assets
-None. No logo, no icons, no images — the restraint is the identity.
+None. No logo, no icons, no images - the restraint is the identity.
 Only external asset is the JetBrains Mono webfont (Google Fonts); self-host it in production.
 
 ## Data not in the backend surface
 Worth adding server-side; the design works without it:
-1. **Order count per level** — would allow a real `ORDERS` column and better queue-ahead realism.
-2. **`tradedVolumeAt(side, price, windowMs)`** or a trade tape — the volume budget is currently typed by the user rather than observed.
-3. **Exchange timestamp on the book** — `BOOK AGE` in the status strip is derived client-side today.
+1. **Order count per level** - would allow a real `ORDERS` column and better queue-ahead realism.
+2. **`tradedVolumeAt(side, price, windowMs)`** or a trade tape - the volume budget is currently typed by the user rather than observed.
+3. **Exchange timestamp on the book** - `BOOK AGE` in the status strip is derived client-side today.
 
 ## Files
-- `Order Book Probe.dc.html` — the full design (markup + logic + tokens) in one file.
-- `support.js` — prototype runtime only; not part of the design, do not port.
+- `Order Book Probe.dc.html` - the full design (markup + logic + tokens) in one file.
+- `support.js` - prototype runtime only; not part of the design, do not port.
